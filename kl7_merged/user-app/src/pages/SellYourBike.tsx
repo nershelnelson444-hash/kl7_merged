@@ -4,13 +4,7 @@ import StaggerContainer, { StaggerItem } from '../components/StaggerContainer';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import Button from '../components/Button';
-import { createClient } from '@supabase/supabase-js';
-
-// ✅ Replace these with your actual Supabase project credentials
-const supabase = createClient(
-  'https://your-project.supabase.co',   // SUPABASE_URL
-  'your-anon-key-here'                   // SUPABASE_ANON_KEY
-);
+import supabase from '../config/supabaseclient';
 
 const bikeConditions = ["New", "Like New", "Good", "Fair"];
 const bikeTypes = ["Sport", "Naked", "Adventure", "Cruiser", "Scooter", "Classic", "Off-Road", "Other"];

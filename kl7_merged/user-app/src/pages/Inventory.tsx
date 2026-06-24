@@ -1,31 +1,59 @@
-import React, { useState, useMemo } from 'react';
-import { inventory } from '../data/cms';
+import React, { useState, useMemo, useEffect } from 'react';
+import supabase from '../config/supabaseclient';
 import CarsCard from '../components/CarsCard';
 import FadeIn from '../components/FadeIn';
 import StaggerContainer, { StaggerItem } from '../components/StaggerContainer';
 import Button from '../components/Button';
 import FilterSidebar, { type FilterState, defaultFilters } from '../components/FilterSidebar';
 
-const categories = ["All", "Coupe", "SUV", "Estate", "Convertible"];
+const categories = ["All", "Cruiser", "Sports", "Adventure", "Naked", "Scooter"];
+
+function toCamelCase(obj: Record<string, unknown>): Record<string, unknown> {
+  const out: Record<string, unknown> = {};
+  for (const [k, v] of Object.entries(obj)) {
+    out[k.replace(/_([a-z])/g, (_, c) => c.toUpperCase())] = v;
+  }
+  return out;
+}
 
 export default function Inventory() {
+  const [bikes, setBikes] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
   const [activeCategory, setActiveCategory] = useState("All");
   const [filters, setFilters] = useState<FilterState>(defaultFilters);
   const [appliedFilters, setAppliedFilters] = useState<FilterState>(defaultFilters);
   const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
 
-  const filteredInventory = useMemo(() => {
-    return inventory.filter((item) => {
-      const fd = item.fieldData;
-      const name = fd.i251F_cLI?.value.toLowerCase() ?? "";
-      const model = fd.dWaufMx5m?.value.toLowerCase() ?? "";
-      const make = fd.FhhhIfKRq?.value ?? "";
-      const price = Number(fd.ieALPznS3?.value) || 0;
-      const year = Number(fd.AsGqvZIRE?.value) || 0;
-      const mileage = Number(fd.FixYCUMxe?.value) || 0;
-      const color = fd.BpRFrjZwy?.value ?? "";
-      const bodyType = fd.gCShDyGRg?.value ?? "";
+  useEffect(() => {
+    fetchBikes();
+  }, []);
+
+  async function fetchBikes() {
+    setLoading(true);
+    const { data, error } = await supabase
+      .from("bikes")
+      .select("*")
+      .eq("status", "available")
+      .order("created_at", { ascending: false });
+    if (error) {
+      console.error("Failed to fetch bikes:", error);
+    } else {
+      setBikes((data ?? []).map((d) => toCamelCase(d as unknown as Record<string, unknown>)));
+    }
+    setLoading(false);
+  }
+
+  const filteredBikes = useMemo(() => {
+    return bikes.filter((bike) => {
+      const name = `${bike.brand} ${bike.model}`.toLowerCase();
+      const model = bike.model?.toLowerCase() ?? "";
+      const make = bike.brand ?? "";
+      const price = Number(bike.price) || 0;
+      const year = Number(bike.year) || 0;
+      const mileage = Number(bike.odometer) || 0;
+      const color = bike.color ?? "";
+      const bodyType = bike.bodyType ?? "";
 
       const matchSearch = name.includes(searchQuery.toLowerCase()) || model.includes(searchQuery.toLowerCase());
       const matchCategory = activeCategory === "All" || bodyType.toLowerCase() === activeCategory.toLowerCase();
@@ -40,8 +68,6 @@ export default function Inventory() {
         appliedFilters.colors.length === 0 ||
         appliedFilters.colors.some((c) => color.toLowerCase().includes(c.toLowerCase()));
       const matchKm = mileage >= appliedFilters.kmRange[0] && mileage <= appliedFilters.kmRange[1];
-      // NOTE: "Segment" (Luxury/Normal) isn't a real CMS field - derived from
-      // price as a placeholder until a real segment field exists.
       const segment = price >= 150000 ? "Luxury" : "Normal";
       const matchSegment = appliedFilters.segments.length === 0 || appliedFilters.segments.includes(segment);
 
@@ -50,7 +76,7 @@ export default function Inventory() {
         matchBodyType && matchColor && matchKm && matchSegment
       );
     });
-  }, [searchQuery, activeCategory, appliedFilters]);
+  }, [searchQuery, activeCategory, appliedFilters, bikes]);
 
   const applyFilters = () => {
     setAppliedFilters(filters);
@@ -173,11 +199,29 @@ export default function Inventory() {
 
           {/* Grid */}
           <div className="flex-1 min-w-0">
-            {filteredInventory.length > 0 ? (
+            {loading ? (
+              <div className="w-full py-32 flex items-center justify-center">
+                <div className="w-8 h-8 border-2 border-black-main border-t-transparent rounded-full animate-spin" />
+              </div>
+            ) : filteredBikes.length > 0 ? (
               <StaggerContainer delayChildren={0.1} staggerChildren={0.08} className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-                {filteredInventory.map((item) => (
-                  <StaggerItem key={item.id}>
-                    <CarsCard item={item} />
+                {filteredBikes.map((bike) => (
+                  <StaggerItem key={bike.id}>
+                    <CarsCard item={{
+                      id: bike.id,
+                      slug: bike.id,
+                      draft: false,
+                      fieldData: {
+                        i251F_cLI: { value: `${bike.brand} ${bike.model}` },
+                        yhmUaSJgn: { value: bike.images?.[0] || '' },
+                        AsGqvZIRE: { value: String(bike.year) },
+                        ieALPznS3: { value: String(bike.price) },
+                        FixYCUMxe: { value: bike.odometer },
+                        XKcYqdDj3: { value: bike.fuelType },
+                        DUdYPJIP0: { value: bike.specs?.transmission || '' },
+                        oBzwmlvOK: { value: bike.condition },
+                      }
+                    } as any} />
                   </StaggerItem>
                 ))}
               </StaggerContainer>
