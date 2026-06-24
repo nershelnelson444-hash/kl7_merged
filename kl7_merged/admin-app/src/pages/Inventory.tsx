@@ -98,11 +98,10 @@ export default function Inventory() {
           <button
             key={tab.value}
             onClick={() => setStatusTab(tab.value)}
-            className={`rounded-full px-4 py-1.5 text-sm font-medium transition-colors ${
-              statusTab === tab.value
+            className={`rounded-full px-4 py-1.5 text-sm font-medium transition-colors ${statusTab === tab.value
                 ? "bg-ink text-white"
                 : "bg-surface text-muted shadow-soft hover:bg-canvas-dim hover:text-ink"
-            }`}
+              }`}
           >
             {tab.label}
           </button>
@@ -184,105 +183,105 @@ export default function Inventory() {
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
           {isLoading
             ? Array.from({ length: 8 }).map((_, i) => (
-                <Skeleton key={i} className="h-72 rounded-card" />
-              ))
+              <Skeleton key={i} className="h-72 rounded-card" />
+            ))
             : (bikes ?? []).map((bike, i) => (
-                <motion.div
-                  key={bike.id}
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.3, delay: i * 0.025 }}
-                >
-                  <Card className="overflow-hidden p-0">
-                    <div className="relative">
-                      <img
-                        src={bike.images[0]}
-                        alt={`${bike.brand} ${bike.model}`}
-                        className="h-44 w-full object-cover"
-                        loading="lazy"
-                      />
-                      <div className="absolute right-3 top-3">
-                        <Badge variant={STATUS_BADGE[bike.status]}>
-                          {bike.status.charAt(0).toUpperCase() + bike.status.slice(1)}
-                        </Badge>
-                      </div>
-                      {bike.featured && (
-                        <div className="absolute left-3 top-3 rounded-full bg-lime px-2 py-0.5 text-xs font-bold text-lime-ink">
-                          Featured
-                        </div>
-                      )}
+              <motion.div
+                key={bike.id}
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.3, delay: i * 0.025 }}
+              >
+                <Card className="overflow-hidden p-0">
+                  <div className="relative">
+                    <img
+                      src={bike.images[0]}
+                      alt={`${bike.brand} ${bike.model}`}
+                      className="h-44 w-full object-cover"
+                      loading="lazy"
+                    />
+                    <div className="absolute right-3 top-3">
+                      <Badge variant={STATUS_BADGE[bike.status]}>
+                        {bike.status.charAt(0).toUpperCase() + bike.status.slice(1)}
+                      </Badge>
                     </div>
-                    <div className="p-4">
-                      <div className="flex items-start justify-between gap-2">
-                        <div>
-                          <div className="font-display text-sm font-bold leading-tight text-ink">
-                            {bike.brand} {bike.model}
-                          </div>
-                          <div className="mt-0.5 text-xs text-muted">{bike.year} · {bike.color}</div>
+                    {bike.featured && (
+                      <div className="absolute left-3 top-3 rounded-full bg-lime px-2 py-0.5 text-xs font-bold text-lime-ink">
+                        Featured
+                      </div>
+                    )}
+                  </div>
+                  <div className="p-4">
+                    <div className="flex items-start justify-between gap-2">
+                      <div>
+                        <div className="font-display text-sm font-bold leading-tight text-ink">
+                          {bike.brand} {bike.model}
                         </div>
-                        <DropdownMenu>
-                          <DropdownMenuTrigger asChild>
-                            <button className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full hover:bg-canvas-dim">
-                              <MoreHorizontal className="h-4 w-4" />
-                            </button>
-                          </DropdownMenuTrigger>
-                          <DropdownMenuContent align="end">
-                            <DropdownMenuItem asChild>
-                              <Link to={`/inventory/${bike.id}/edit`} className="flex items-center gap-2">
-                                <Pencil className="h-4 w-4" /> Edit
-                              </Link>
-                            </DropdownMenuItem>
-                            {bike.status === "available" && (
-                              <DropdownMenuItem
-                                onClick={() => updateStatus.mutate({ id: bike.id, status: "reserved" })}
-                                className="flex items-center gap-2"
-                              >
-                                <CheckCircle2 className="h-4 w-4" /> Mark Reserved
-                              </DropdownMenuItem>
-                            )}
-                            {bike.status === "reserved" && (
-                              <DropdownMenuItem
-                                onClick={() => updateStatus.mutate({ id: bike.id, status: "sold" })}
-                                className="flex items-center gap-2"
-                              >
-                                <CheckCircle2 className="h-4 w-4" /> Mark Sold
-                              </DropdownMenuItem>
-                            )}
-                            <DropdownMenuSeparator />
+                        <div className="mt-0.5 text-xs text-muted">{bike.year} · {bike.color}</div>
+                      </div>
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <button className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full hover:bg-canvas-dim">
+                            <MoreHorizontal className="h-4 w-4" />
+                          </button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                          <DropdownMenuItem asChild>
+                            <Link to={`/inventory/${bike.id}/edit`} className="flex items-center gap-2">
+                              <Pencil className="h-4 w-4" /> Edit
+                            </Link>
+                          </DropdownMenuItem>
+                          {bike.status === "available" && (
                             <DropdownMenuItem
-                              onClick={() => handleDelete(bike.id, `${bike.brand} ${bike.model}`)}
-                              className="flex items-center gap-2 text-danger focus:text-danger"
+                              onClick={() => updateStatus.mutate({ id: bike.id, status: "reserved" })}
+                              className="flex items-center gap-2"
                             >
-                              <Trash2 className="h-4 w-4" /> Remove
+                              <CheckCircle2 className="h-4 w-4" /> Mark Reserved
                             </DropdownMenuItem>
-                          </DropdownMenuContent>
-                        </DropdownMenu>
-                      </div>
+                          )}
+                          {bike.status === "reserved" && (
+                            <DropdownMenuItem
+                              onClick={() => updateStatus.mutate({ id: bike.id, status: "sold" })}
+                              className="flex items-center gap-2"
+                            >
+                              <CheckCircle2 className="h-4 w-4" /> Mark Sold
+                            </DropdownMenuItem>
+                          )}
+                          <DropdownMenuSeparator />
+                          <DropdownMenuItem
+                            onClick={() => handleDelete(bike.id, `${bike.brand} ${bike.model}`)}
+                            className="flex items-center gap-2 text-danger focus:text-danger"
+                          >
+                            <Trash2 className="h-4 w-4" /> Remove
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    </div>
 
-                      <div className="mt-3 flex items-center justify-between">
-                        <div className="font-display text-lg font-bold text-ink">
-                          {formatCurrencyINR(bike.price)}
-                        </div>
-                      </div>
-
-                      <div className="mt-2 flex flex-wrap gap-3 text-xs text-muted">
-                        <span className="flex items-center gap-1">
-                          <Gauge className="h-3.5 w-3.5" />
-                          {bike.odometer.toLocaleString("en-IN")} km
-                        </span>
-                        <span className="flex items-center gap-1">
-                          <MapPin className="h-3.5 w-3.5" />
-                          {bike.showroom}
-                        </span>
-                        <span className="flex items-center gap-1">
-                          <Bike className="h-3.5 w-3.5" />
-                          {bike.owners} owner{bike.owners > 1 ? "s" : ""}
-                        </span>
+                    <div className="mt-3 flex items-center justify-between">
+                      <div className="font-display text-lg font-bold text-ink">
+                        {formatCurrencyINR(bike.price)}
                       </div>
                     </div>
-                  </Card>
-                </motion.div>
-              ))}
+
+                    <div className="mt-2 flex flex-wrap gap-3 text-xs text-muted">
+                      <span className="flex items-center gap-1">
+                        <Gauge className="h-3.5 w-3.5" />
+                        {bike.odometer.toLocaleString("en-IN")} km
+                      </span>
+                      <span className="flex items-center gap-1">
+                        <MapPin className="h-3.5 w-3.5" />
+                        {bike.showroom}
+                      </span>
+                      <span className="flex items-center gap-1">
+                        <Bike className="h-3.5 w-3.5" />
+                        {bike.owners} owner{bike.owners > 1 ? "s" : ""}
+                      </span>
+                    </div>
+                  </div>
+                </Card>
+              </motion.div>
+            ))}
         </div>
       )}
 
@@ -305,65 +304,65 @@ export default function Inventory() {
               <tbody className="divide-y divide-line bg-surface">
                 {isLoading
                   ? Array.from({ length: 6 }).map((_, i) => (
-                      <tr key={i}>
-                        {Array.from({ length: 7 }).map((_, j) => (
-                          <td key={j} className="px-4 py-3">
-                            <Skeleton className="h-4 w-full" />
-                          </td>
-                        ))}
-                      </tr>
-                    ))
+                    <tr key={i}>
+                      {Array.from({ length: 7 }).map((_, j) => (
+                        <td key={j} className="px-4 py-3">
+                          <Skeleton className="h-4 w-full" />
+                        </td>
+                      ))}
+                    </tr>
+                  ))
                   : (bikes ?? []).map((bike) => (
-                      <tr key={bike.id} className="group hover:bg-canvas">
-                        <td className="px-4 py-3">
-                          <div className="flex items-center gap-3">
-                            <img
-                              src={bike.images[0]}
-                              alt=""
-                              className="h-10 w-14 rounded-lg object-cover"
-                            />
-                            <div>
-                              <div className="font-semibold text-ink">
-                                {bike.brand} {bike.model}
-                              </div>
-                              <div className="text-xs text-muted">{bike.color}</div>
+                    <tr key={bike.id} className="group hover:bg-canvas">
+                      <td className="px-4 py-3">
+                        <div className="flex items-center gap-3">
+                          <img
+                            src={bike.images[0]}
+                            alt=""
+                            className="h-10 w-14 rounded-lg object-cover"
+                          />
+                          <div>
+                            <div className="font-semibold text-ink">
+                              {bike.brand} {bike.model}
                             </div>
+                            <div className="text-xs text-muted">{bike.color}</div>
                           </div>
-                        </td>
-                        <td className="px-4 py-3 text-ink">{bike.year}</td>
-                        <td className="px-4 py-3 text-ink">{bike.showroom}</td>
-                        <td className="px-4 py-3 text-ink">{bike.odometer.toLocaleString("en-IN")} km</td>
-                        <td className="px-4 py-3 font-display font-bold text-ink">{formatCurrencyINR(bike.price)}</td>
-                        <td className="px-4 py-3">
-                          <Badge variant={STATUS_BADGE[bike.status]}>
-                            {bike.status.charAt(0).toUpperCase() + bike.status.slice(1)}
-                          </Badge>
-                        </td>
-                        <td className="px-4 py-3 text-right">
-                          <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                              <button className="flex h-8 w-8 items-center justify-center rounded-full hover:bg-canvas-dim opacity-0 group-hover:opacity-100 transition-opacity">
-                                <MoreHorizontal className="h-4 w-4" />
-                              </button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end">
-                              <DropdownMenuItem asChild>
-                                <Link to={`/inventory/${bike.id}/edit`} className="flex items-center gap-2">
-                                  <Pencil className="h-4 w-4" /> Edit
-                                </Link>
-                              </DropdownMenuItem>
-                              <DropdownMenuSeparator />
-                              <DropdownMenuItem
-                                onClick={() => handleDelete(bike.id, `${bike.brand} ${bike.model}`)}
-                                className="flex items-center gap-2 text-danger focus:text-danger"
-                              >
-                                <Trash2 className="h-4 w-4" /> Remove
-                              </DropdownMenuItem>
-                            </DropdownMenuContent>
-                          </DropdownMenu>
-                        </td>
-                      </tr>
-                    ))}
+                        </div>
+                      </td>
+                      <td className="px-4 py-3 text-ink">{bike.year}</td>
+                      <td className="px-4 py-3 text-ink">{bike.showroom}</td>
+                      <td className="px-4 py-3 text-ink">{bike.odometer.toLocaleString("en-IN")} km</td>
+                      <td className="px-4 py-3 font-display font-bold text-ink">{formatCurrencyINR(bike.price)}</td>
+                      <td className="px-4 py-3">
+                        <Badge variant={STATUS_BADGE[bike.status]}>
+                          {bike.status.charAt(0).toUpperCase() + bike.status.slice(1)}
+                        </Badge>
+                      </td>
+                      <td className="px-4 py-3 text-right">
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <button className="flex h-8 w-8 items-center justify-center rounded-full hover:bg-canvas-dim opacity-0 group-hover:opacity-100 transition-opacity">
+                              <MoreHorizontal className="h-4 w-4" />
+                            </button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end">
+                            <DropdownMenuItem asChild>
+                              <Link to={`/inventory/${bike.id}/edit`} className="flex items-center gap-2">
+                                <Pencil className="h-4 w-4" /> Edit
+                              </Link>
+                            </DropdownMenuItem>
+                            <DropdownMenuSeparator />
+                            <DropdownMenuItem
+                              onClick={() => handleDelete(bike.id, `${bike.brand} ${bike.model}`)}
+                              className="flex items-center gap-2 text-danger focus:text-danger"
+                            >
+                              <Trash2 className="h-4 w-4" /> Remove
+                            </DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                      </td>
+                    </tr>
+                  ))}
               </tbody>
             </table>
           </div>

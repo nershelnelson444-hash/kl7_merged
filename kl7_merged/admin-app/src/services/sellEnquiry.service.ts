@@ -1,42 +1,123 @@
+import { USE_MOCK_API } from "@/api/client";
 import { mockDb, networkDelay, newId } from "@/api/mockDb";
+import { supabase } from "@/config/SupabaseClient";
 import type { SellEnquiry, SellEnquiryStatus } from "@/types";
+
+// ─── Field mappers for bike_valuation_requests table ──────────────────────
+
+function rowToSellEnquiry(row: Record<string, unknown>): SellEnquiry {
+  return {
+    id: row.id as string,
+    brand: row.brand_make as string,
+    model: row.model as string,
+    year: row.year as number,
+    mileage: row.mileage_km as number,
+    engineCC: (row.engine_cc as number) ?? 0,
+    bikeType: row.bike_type as SellEnquiry["bikeType"],
+    condition: row.condition as SellEnquiry["condition"],
+    askingPrice: (row.asking_price_rm as number) ?? 0,
+    notes: (row.additional_notes as string) ?? "",
+    fullName: row.full_name as string,
+    phone: row.phone_number as string,
+    email: row.email_address as string,
+    preferredContact: row.preferred_contact as SellEnquiry["preferredContact"],
+    status: (row.status as SellEnquiryStatus) ?? "new",
+    createdAt: row.created_at as string,
+    updatedAt: row.updated_at as string,
+  };
+}
+
+function sellEnquiryToRow(enquiry: Partial<SellEnquiry>): Record<string, unknown> {
+  const row: Record<string, unknown> = {};
+  if (enquiry.brand !== undefined) row.brand_make = enquiry.brand;
+  if (enquiry.model !== undefined) row.model = enquiry.model;
+  if (enquiry.year !== undefined) row.year = enquiry.year;
+  if (enquiry.mileage !== undefined) row.mileage_km = enquiry.mileage;
+  if (enquiry.engineCC !== undefined) row.engine_cc = enquiry.engineCC;
+  if (enquiry.bikeType !== undefined) row.bike_type = enquiry.bikeType;
+  if (enquiry.condition !== undefined) row.condition = enquiry.condition;
+  if (enquiry.askingPrice !== undefined) row.asking_price_rm = enquiry.askingPrice;
+  if (enquiry.notes !== undefined) row.additional_notes = enquiry.notes;
+  if (enquiry.fullName !== undefined) row.full_name = enquiry.fullName;
+  if (enquiry.phone !== undefined) row.phone_number = enquiry.phone;
+  if (enquiry.email !== undefined) row.email_address = enquiry.email;
+  if (enquiry.preferredContact !== undefined) row.preferred_contact = enquiry.preferredContact;
+  if (enquiry.status !== undefined) row.status = enquiry.status;
+  return row;
+}
 
 export const sellEnquiryService = {
   async list(): Promise<SellEnquiry[]> {
-    await networkDelay();
-    const db = mockDb.get() as any;
-    if (!db.sellEnquiries) {
-      mockDb.update((d: any) => { d.sellEnquiries = MOCK_SELL_ENQUIRIES; });
+    if (USE_MOCK_API) {
+      await networkDelay();
+      const db = mockDb.get() as any;
+      if (!db.sellEnquiries) {
+        mockDb.update((d: any) => { d.sellEnquiries = MOCK_SELL_ENQUIRIES; });
+      }
+      const all: SellEnquiry[] = (mockDb.get() as any).sellEnquiries ?? [];
+      return [...all].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
     }
-    const all: SellEnquiry[] = (mockDb.get() as any).sellEnquiries ?? [];
-    return [...all].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+    const { data, error } = await supabase
+      .from("bike_valuation_requests")
+      .select("*")
+      .order("created_at", { ascending: false });
+    if (error) throw error;
+    return (data ?? []).map((row) => rowToSellEnquiry(row as unknown as Record<string, unknown>));
   },
 
   async get(id: string): Promise<SellEnquiry | undefined> {
-    await networkDelay(150, 300);
-    const all: SellEnquiry[] = (mockDb.get() as any).sellEnquiries ?? [];
-    return all.find((e) => e.id === id);
+    if (USE_MOCK_API) {
+      await networkDelay(150, 300);
+      const all: SellEnquiry[] = (mockDb.get() as any).sellEnquiries ?? [];
+      return all.find((e) => e.id === id);
+    }
+    const { data, error } = await supabase
+      .from("bike_valuation_requests")
+      .select("*")
+      .eq("id", id)
+      .single();
+    if (error) {
+      if ((error as { code?: string }).code === "PGRST116") return undefined;
+      throw error;
+    }
+    return data ? rowToSellEnquiry(data as unknown as Record<string, unknown>) : undefined;
   },
 
   async updateStatus(id: string, status: SellEnquiryStatus): Promise<SellEnquiry> {
-    await networkDelay();
-    let updated: SellEnquiry | undefined;
-    mockDb.update((d: any) => {
-      d.sellEnquiries = (d.sellEnquiries ?? []).map((e: SellEnquiry) => {
-        if (e.id !== id) return e;
-        updated = { ...e, status, updatedAt: new Date().toISOString() };
-        return updated;
+    if (USE_MOCK_API) {
+      await networkDelay();
+      let updated: SellEnquiry | undefined;
+      mockDb.update((d: any) => {
+        d.sellEnquiries = (d.sellEnquiries ?? []).map((e: SellEnquiry) => {
+          if (e.id !== id) return e;
+          updated = { ...e, status, updatedAt: new Date().toISOString() };
+          return updated;
+        });
       });
-    });
-    if (!updated) throw new Error("Sell enquiry not found");
-    return updated;
+      if (!updated) throw new Error("Sell enquiry not found");
+      return updated;
+    }
+    const { data, error } = await supabase
+      .from("bike_valuation_requests")
+      .update({ status, updated_at: new Date().toISOString() })
+      .eq("id", id)
+      .select()
+      .single();
+    if (error) throw error;
+    if (!data) throw new Error("Sell enquiry not found");
+    return rowToSellEnquiry(data as unknown as Record<string, unknown>);
   },
 
   async remove(id: string): Promise<void> {
-    await networkDelay();
-    mockDb.update((d: any) => {
-      d.sellEnquiries = (d.sellEnquiries ?? []).filter((e: SellEnquiry) => e.id !== id);
-    });
+    if (USE_MOCK_API) {
+      await networkDelay();
+      mockDb.update((d: any) => {
+        d.sellEnquiries = (d.sellEnquiries ?? []).filter((e: SellEnquiry) => e.id !== id);
+      });
+      return;
+    }
+    const { error } = await supabase.from("bike_valuation_requests").delete().eq("id", id);
+    if (error) throw error;
   },
 };
 
