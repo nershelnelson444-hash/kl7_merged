@@ -1,5 +1,5 @@
 import React, { useState, useMemo, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 import supabase from '../config/supabaseclient';
 import CarsCard from '../components/CarsCard';
 import FadeIn from '../components/FadeIn';
@@ -18,10 +18,11 @@ function toCamelCase(obj: Record<string, unknown>): Record<string, unknown> {
 }
 
 export default function Inventory() {
+  const [searchParams] = useSearchParams();
   const [bikes, setBikes] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-  const [searchQuery, setSearchQuery] = useState("");
-  const [activeCategory, setActiveCategory] = useState("All");
+  const [searchQuery, setSearchQuery] = useState(searchParams.get('q') ?? '');
+  const [activeCategory, setActiveCategory] = useState('All');
   const [filters, setFilters] = useState<FilterState>(defaultFilters);
   const [appliedFilters, setAppliedFilters] = useState<FilterState>(defaultFilters);
   const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);

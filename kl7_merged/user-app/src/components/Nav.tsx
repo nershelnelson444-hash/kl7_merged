@@ -1,25 +1,25 @@
-import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import React, { useState, useRef, useEffect } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence, useScroll, useTransform } from 'framer-motion';
 import Button from './Button';
 import kl7logo from '../assets/kl7logo.png';
+import { useAuth } from '../contexts/AuthContext';
+import { logout } from '../firebase';
 
 export default function Nav() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
+  const profileMenuRef = useRef<HTMLDivElement>(null);
   const { scrollY } = useScroll();
+  const { user } = useAuth();
+  const navigate = useNavigate();
 
   const backgroundColor = useTransform(
     scrollY,
     [0, 50],
     ["rgba(242, 242, 242, 1)", "rgba(242, 242, 242, 0.85)"]
   );
-
-  const backdropFilter = useTransform(
-    scrollY,
-    [0, 50],
-    ["blur(0px)", "blur(12px)"]
-  );
-
+  const backdropFilter = useTransform(scrollY, [0, 50], ["blur(0px)", "blur(12px)"]);
   const borderBottom = useTransform(
     scrollY,
     [0, 50],
@@ -34,19 +34,77 @@ export default function Nav() {
     { label: 'Contact', to: '/contact' },
   ];
 
-  const adminUrl = import.meta.env.VITE_ADMIN_URL ?? 'http://localhost:5174';
+  // Close profile dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (profileMenuRef.current && !profileMenuRef.current.contains(e.target as Node)) {
+        setIsProfileMenuOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
 
-  const ProfileIcon = () => (
-    <a
-      href={`${adminUrl}/login`}
-      className="w-[46px] h-[46px] rounded-full flex items-center justify-center border border-grey-main bg-white text-black transition-transform hover:scale-105 flex-shrink-0"
-      title="Admin Dashboard"
+  const handleLogout = async () => {
+    try {
+      await logout();
+      setIsProfileMenuOpen(false);
+      navigate('/');
+    } catch (err) {
+      console.error('Logout failed', err);
+    }
+  };
+
+  // Inlined auth button JSX — NOT a nested component so React never unmounts it mid-click
+  const authButtonJSX = user ? (
+    <div className="relative" ref={profileMenuRef}>
+      <button
+        onClick={() => setIsProfileMenuOpen((prev) => !prev)}
+        className="w-[46px] h-[46px] rounded-full overflow-hidden border-2 border-black/10 hover:border-black/40 transition-all flex-shrink-0 flex items-center justify-center bg-gray-200"
+        title={user.displayName || user.email || 'Profile'}
+      >
+        {user.photoURL ? (
+          <img src={user.photoURL} alt="Profile" className="w-full h-full object-cover" referrerPolicy="no-referrer" />
+        ) : (
+          <span className="text-sm font-bold text-black">
+            {(user.displayName || user.email || 'U')[0].toUpperCase()}
+          </span>
+        )}
+      </button>
+
+      <AnimatePresence>
+        {isProfileMenuOpen && (
+          <motion.div
+            initial={{ opacity: 0, y: 8, scale: 0.95 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: 8, scale: 0.95 }}
+            transition={{ duration: 0.15 }}
+            className="absolute right-0 top-[54px] w-56 bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden z-50"
+          >
+            <div className="p-4 border-b border-gray-100">
+              <p className="font-semibold text-sm text-black truncate">{user.displayName || 'User'}</p>
+              <p className="text-xs text-gray-500 truncate">{user.email}</p>
+            </div>
+            <button
+              type="button"
+              onMouseDown={(e) => e.preventDefault()} // prevent outside-click handler from firing first
+              onClick={handleLogout}
+              className="w-full text-left px-4 py-3 text-sm text-red-500 hover:bg-red-50 transition-colors font-medium"
+            >
+              Sign Out
+            </button>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
+  ) : (
+    <Link
+      to="/login"
+      className="h-[46px] px-6 rounded-full flex items-center justify-center border border-grey-main bg-white text-black transition-transform hover:scale-105 flex-shrink-0 font-medium text-sm"
+      title="Login"
     >
-      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
-        <circle cx="12" cy="7" r="4" />
-      </svg>
-    </a>
+      Login
+    </Link>
   );
 
   return (
@@ -59,7 +117,7 @@ export default function Nav() {
         transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] as [number, number, number, number] }}
       >
         <div className="max-w-[1480px] mx-auto flex flex-row items-center justify-between">
-          {/* Logo (Left) */}
+          {/* Logo */}
           <Link to="/" className="flex items-center flex-shrink-0">
             <img src={kl7logo} alt="KL7 Garage" className="h-12 w-auto object-contain" />
           </Link>
@@ -78,20 +136,19 @@ export default function Nav() {
             ))}
           </div>
 
-          {/* Right Actions - Desktop */}
+          {/* Right Actions */}
           <div className="flex flex-row items-center gap-3">
-            {/* Get in Touch - desktop only */}
             <Button asLink to="/contact" variant="primary" className="hidden md:flex">
               Get in Touch
             </Button>
-            {/* Profile icon - desktop only */}
+            {/* Desktop auth */}
             <div className="hidden md:flex">
-              <ProfileIcon />
+              {authButtonJSX}
             </div>
 
-            {/* Mobile: profile icon + menu toggle */}
+            {/* Mobile: auth + hamburger */}
             <div className="flex lg:hidden flex-row items-center gap-2">
-              <ProfileIcon />
+              {authButtonJSX}
               <button
                 className="flex flex-col justify-center items-center w-[46px] h-[46px] rounded-full border border-grey-main bg-white"
                 onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
@@ -110,7 +167,7 @@ export default function Nav() {
         </div>
       </motion.nav>
 
-      {/* Mobile Menu Overlay */}
+      {/* Mobile Menu */}
       <AnimatePresence>
         {isMobileMenuOpen && (
           <motion.div
