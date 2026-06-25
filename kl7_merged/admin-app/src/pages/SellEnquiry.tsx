@@ -13,7 +13,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { useSellEnquiries, useUpdateSellEnquiryStatus, useDeleteSellEnquiry } from "@/hooks/useSellEnquiry";
 import { useDebounce } from "@/hooks/useDebounce";
 import { initials, formatRelativeTime } from "@/lib/utils";
-import type { SellEnquiry, SellEnquiryStatus } from "@/types";
+import type { SellEnquiry, SellEnquiryStatus } from "@/types/sellEnquiry.types";
 import { cn } from "@/lib/utils";
 
 const STATUS_TABS: { value: SellEnquiryStatus | "all"; label: string }[] = [
