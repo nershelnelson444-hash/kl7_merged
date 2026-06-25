@@ -11,10 +11,11 @@ import FadeIn from '../components/FadeIn';
 import StaggerContainer, { StaggerItem } from '../components/StaggerContainer';
 import { motion } from 'framer-motion';
 import Button from '../components/Button';
+import heroImage from '../assets/hero.png';
 
 export default function Home() {
   return (
-    <div className="w-full flex flex-col bg-white overflow-hidden pb-36">
+    <div className="w-full flex flex-col bg-white">
 
       {/* ─── HERO SECTION ─────────────────────────────── */}
       <section className="w-full h-screen bg-background-main overflow-hidden flex flex-col pt-[104px] px-2 pb-2">
@@ -22,11 +23,10 @@ export default function Home() {
           {/* Background Image */}
           <div className="absolute inset-0 z-0">
             <img
-              src="https://framerusercontent.com/images/QT1UEFL8QJPutAvTj9StqpyLY.webp"
+              src={heroImage}
               alt="KL7 Garage Hero"
               className="w-full h-full object-cover"
             />
-            <div className="absolute inset-0 bg-black-50" />
           </div>
 
           {/* Content */}

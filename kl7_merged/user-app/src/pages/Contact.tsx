@@ -57,7 +57,7 @@ export default function Contact() {
   };
 
   return (
-    <div className="w-full min-h-screen bg-background-main flex flex-col overflow-hidden">
+    <div className="w-full min-h-screen bg-background-main flex flex-col">
 
       {/* ─── PAGE HERO ─────────────────────────────────── */}
       <section className="w-full bg-background-main pt-[104px] pb-0 flex flex-col items-center">
@@ -72,7 +72,7 @@ export default function Contact() {
       </section>
 
       {/* ─── MAIN CONTENT ──────────────────────────────── */}
-      <section className="w-full bg-background-main pb-36 flex flex-col items-center">
+      <section className="w-full bg-background-main pb-16 flex flex-col items-center">
         <div className="max-w-[1480px] w-full px-8 flex flex-col lg:flex-row gap-16">
 
           {/* Left: Info */}

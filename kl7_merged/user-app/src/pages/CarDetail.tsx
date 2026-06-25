@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import supabase from '../config/supabaseclient';
-import Carousel from '../components/Carousel';
+import BikeImageViewer from '../components/BikeImageViewer';
 import Accordion from '../components/Accordion';
 import Button from '../components/Button';
 
@@ -100,16 +100,8 @@ export default function CarDetail() {
     );
   }
 
-  // ── Build carousel images from the images[] array ─────────────────────────
+  // ── Build image list from the images[] array ──────────────────────────────
   const imageList = Array.isArray(bike.images) ? bike.images : [];
-  const carouselProps: Record<string, any> = {
-    autoPlay: true,
-    interval: 4000,
-    borderRadius: 24,
-  };
-  imageList.forEach((src, i) => {
-    carouselProps[`image${i + 1}`] = { src, alt: `${bike.brand} ${bike.model} — photo ${i + 1}` };
-  });
 
   const title = `${bike.brand} ${bike.model}${bike.variant ? ` ${bike.variant}` : ''}`;
   const specs = bike.specs ?? {};
@@ -139,15 +131,7 @@ export default function CarDetail() {
         </div>
 
         {/* ── Hero Gallery ───────────────────────────────────────────────── */}
-        <div className="w-full h-[50vh] md:h-[70vh] rounded-[24px] overflow-hidden bg-background-mid">
-          {imageList.length > 0 ? (
-            <Carousel {...carouselProps} />
-          ) : (
-            <div className="w-full h-full flex items-center justify-center text-text-extra-muted">
-              No Images Available
-            </div>
-          )}
-        </div>
+        <BikeImageViewer images={imageList} bikeName={title} />
 
         {/* ── Content Layout ─────────────────────────────────────────────── */}
         <div className="flex flex-col lg:flex-row gap-12 mt-8">

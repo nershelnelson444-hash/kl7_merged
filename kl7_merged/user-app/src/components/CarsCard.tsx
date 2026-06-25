@@ -35,21 +35,26 @@ export default function CarsCard({ item }: CarsCardProps) {
       transition={{ type: "spring", stiffness: 400, damping: 30 }}
     >
       {/* Image Container */}
-      <div className="w-full aspect-[4/3] bg-background-mid relative overflow-hidden">
+      <div className="w-full aspect-[4/3] bg-[#F5F5F5] relative overflow-hidden flex items-center justify-center p-4">
         {image?.value ? (
           <motion.img 
             src={image.value} 
             alt={name.value} 
-            className="w-full h-full object-cover"
+            className="w-full h-full object-contain"
+            style={{ mixBlendMode: 'multiply' }}
             variants={{
               initial: { scale: 1 },
-              hover: { scale: 1.05 }
+              hover: { scale: 1.06 }
             }}
             transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
           />
         ) : (
           <div className="w-full h-full flex items-center justify-center text-text-extra-muted">
-            No Image
+            <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+              <rect x="3" y="3" width="18" height="18" rx="3" />
+              <circle cx="8.5" cy="8.5" r="1.5" />
+              <path d="M21 15l-5-5L5 21" />
+            </svg>
           </div>
         )}
         

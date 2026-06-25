@@ -102,7 +102,7 @@ export default function Inventory() {
 
       {/* ─── PAGE HERO ───────────────────────────────── */}
       <section className="w-full bg-background-main pt-[104px] pb-0 flex flex-col items-center">
-        <div className="max-w-[1480px] w-full px-8 flex flex-col gap-20 py-20">
+        <div className="max-w-[1480px] w-full px-8 flex flex-col gap-6 py-10">
           <FadeIn direction="up">
             <div className="flex flex-col lg:flex-row justify-between items-end w-full gap-8">
               <div className="flex flex-col gap-4">
@@ -133,21 +133,21 @@ export default function Inventory() {
       {/* ─── SEARCH + FILTER TRIGGER ─────────────────── */}
       <section className="w-full bg-background-main border-t border-grey-main sticky top-[78px] z-30">
         <div className="max-w-[1480px] w-full px-8 mx-auto py-4 flex flex-col gap-4">
-          <div className="flex flex-col md:flex-row items-stretch md:items-center gap-4">
-            <div className="hero-search-container w-full md:w-[320px] shrink-0 h-[48px] bg-white border border-grey-main px-5 flex items-center gap-3">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-text-black-muted shrink-0">
+          <div className="flex flex-col gap-3">
+            <div className="hero-search-container w-full h-[64px] bg-white border border-grey-main px-5 flex items-center gap-3">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-text-black-muted shrink-0">
                 <circle cx="11" cy="11" r="8" /><line x1="21" y1="21" x2="16.65" y2="16.65" />
               </svg>
               <input
                 type="text"
                 placeholder="Search brands, models..."
-                className="hero-search-bar bg-transparent outline-none text-text-black placeholder:text-text-extra-muted font-medium text-sm"
+                className="hero-search-bar bg-transparent outline-none text-text-black placeholder:text-text-extra-muted font-medium text-base w-full"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
               />
             </div>
 
-            <div className="flex flex-row items-center gap-2 min-w-0 flex-1">
+            <div className="hidden flex-row items-center gap-2 min-w-0 flex-1">
               <div className="flex flex-row gap-2 overflow-x-auto hide-scrollbar min-w-0">
                 {categories.map((cat) => (
                   <Button
@@ -183,7 +183,7 @@ export default function Inventory() {
       </section>
 
       {/* ─── CONTENT: SIDEBAR + GRID ─────────────────── */}
-      <section className="w-full bg-background-main py-12 pb-36 flex flex-col items-center">
+      <section className="w-full bg-background-main py-12 pb-16 flex flex-col items-center">
         <div className="max-w-[1480px] w-full px-8 flex flex-col lg:flex-row gap-10">
 
           <aside className="hidden lg:block w-[280px] shrink-0">

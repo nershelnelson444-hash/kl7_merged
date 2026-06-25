@@ -3,6 +3,7 @@ import { motion, useScroll, useTransform } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import Button from '../components/Button';
 
+
 import TeamMemberCard from '../components/TeamMemberCard';
 import FaqAccordion from '../components/FaqAccordion';
 import CountUp from '../components/CountUp';
