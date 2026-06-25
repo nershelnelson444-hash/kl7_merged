@@ -297,12 +297,12 @@ export default function AboutUs() {
           <div className="flex flex-col gap-8">
             <ScrollReveal staggerIndex={1} offsetStart="start 90%" offsetEnd="start 55%">
               <p className="text-[#3A3A3A] text-[17px] leading-relaxed">
-                KL7 Garage was founded with one conviction: that buying a pre-owned motorcycle in Kerala shouldn't feel like a negotiation you're bound to lose. Our founder, a lifelong rider, experienced firsthand the opacity, pressure tactics, and broken trust that defined the industry.
+                For the past 10 years, KL7 Garage has been one of Kerala’s trusted destinations for premium pre-owned motorcycles. Built from a passion for riding and a commitment to quality, we have helped hundreds of riders buy and sell motorcycles with complete confidence, transparency, and peace of mind.
               </p>
             </ScrollReveal>
             <ScrollReveal staggerIndex={2} offsetStart="start 90%" offsetEnd="start 55%">
               <p className="text-[#3A3A3A] text-[17px] leading-relaxed">
-                So he built the showroom he wished had existed — one where every price is transparent, every bike is rigorously inspected, and every customer leaves feeling respected. We've served over 500 riders and built a reputation across Kochi that speaks for itself.
+                With 500+ happy customers and a strong reputation in Kochi, KL7 Garage continues to deliver carefully inspected motorcycles, fair pricing, and exceptional service. Every bike that leaves our showroom carries more than just value — it carries trust built over a decade.
               </p>
             </ScrollReveal>
             <ScrollReveal staggerIndex={3} offsetStart="start 90%" offsetEnd="start 55%">
