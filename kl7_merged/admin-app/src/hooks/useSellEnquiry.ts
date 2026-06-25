@@ -1,6 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { sellEnquiryService } from "@/services/sellEnquiry.service";
-import type { SellEnquiryStatus } from "@/types";
+import type { SellEnquiryStatus } from "@/types/sellEnquiry.types";
 import { toast } from "sonner";
 
 export const sellEnquiryKeys = {
@@ -10,7 +10,10 @@ export const sellEnquiryKeys = {
 };
 
 export function useSellEnquiries() {
-  return useQuery({ queryKey: sellEnquiryKeys.list(), queryFn: () => sellEnquiryService.list() });
+  return useQuery({
+    queryKey: sellEnquiryKeys.list(),
+    queryFn: () => sellEnquiryService.list(),
+  });
 }
 
 export function useSellEnquiry(id: string | undefined) {
