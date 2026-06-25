@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { getFeaturedInventory, getFeaturedBlog } from '../data/cms';
 import CarsCard from '../components/CarsCard';
@@ -9,30 +9,64 @@ import BlogCard from '../components/BlogCard';
 import FaqAccordion from '../components/FaqAccordion';
 import FadeIn from '../components/FadeIn';
 import StaggerContainer, { StaggerItem } from '../components/StaggerContainer';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import Button from '../components/Button';
 import heroImage from '../assets/hero.png';
 
+/* ── Mobile FAQ component (self-contained for cleanliness) ── */
+function MobileFaq({ items }: { items: { question: string; answer: string }[] }) {
+  const [openIdx, setOpenIdx] = useState<number | null>(0);
+  return (
+    <div className="mobile-faq-list mobile-only">
+      {items.map((item, i) => (
+        <div
+          key={i}
+          className={`mobile-faq-card${openIdx === i ? ' open' : ''}`}
+          onClick={() => setOpenIdx(openIdx === i ? null : i)}
+        >
+          <div className="mobile-faq-header">
+            <p className="mobile-faq-question">{item.question}</p>
+            <div className="mobile-faq-chevron">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#000" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <polyline points="6 9 12 15 18 9" />
+              </svg>
+            </div>
+          </div>
+          <div className="mobile-faq-answer">
+            <div className="mobile-faq-answer-inner">{item.answer}</div>
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+const faqItems = [
+  { question: "What loan options do you offer?", answer: "We work with a wide network of banks and lenders to offer flexible hire purchase plans—whether you're buying a sports, adventure, or classic bike. Our finance team will walk you through competitive rates and payment plans tailored to your budget. Pre-approval is available within the same day." },
+  { question: "Can I trade in my current bike?", answer: "Absolutely. We accept trade-ins on all makes and models. Bring your bike in for a free, no-obligation appraisal, and we'll apply its value directly toward your next purchase." },
+  { question: "Do your used bikes come with a warranty?", answer: "All bikes in our inventory go through a rigorous multi-point inspection and come with a limited warranty. Extended protection plans are also available for added peace of mind." },
+  { question: "How do I schedule a viewing?", answer: "You can book a viewing directly on our website or call our showroom. We're open 7 days a week and happy to accommodate same-day appointments." },
+  { question: "Do you offer delivery?", answer: "Yes. We offer delivery within the Klang Valley. Once your paperwork is finalised, we'll coordinate a convenient time to bring your bike directly to you." },
+];
+
 export default function Home() {
+  const featuredBikes = getFeaturedInventory().slice(0, 6);
+  const featuredPosts = getFeaturedBlog().slice(0, 3);
+
   return (
     <div className="w-full flex flex-col bg-white">
 
-      {/* ─── HERO SECTION ─────────────────────────────── */}
-      <section className="w-full h-screen bg-background-main overflow-hidden flex flex-col pt-[104px] px-2 pb-2">
+      {/* ══════════════════════════════════════════════════
+          HERO SECTION
+      ══════════════════════════════════════════════════ */}
+
+      {/* ── Desktop Hero ── */}
+      <section className="desktop-only w-full h-screen bg-background-main overflow-hidden flex flex-col pt-[104px] px-2 pb-2">
         <div className="w-full h-full bg-black-main rounded-2xl relative overflow-hidden flex flex-col items-center justify-center p-8 lg:p-16">
-          {/* Background Image */}
           <div className="absolute inset-0 z-0">
-            <img
-              src={heroImage}
-              alt="KL7 Garage Hero"
-              className="w-full h-full object-cover"
-            />
+            <img src={heroImage} alt="KL7 Garage Hero" className="w-full h-full object-cover" />
           </div>
-
-          {/* Content */}
           <div className="w-full h-full max-w-[1480px] z-10 flex flex-col lg:flex-row items-center justify-between gap-10">
-
-            {/* Left */}
             <div className="flex flex-col justify-between h-full max-w-3xl py-8 gap-8">
               <FadeIn direction="up" delay={0.2}>
                 <h1 className="text-text-white font-bold text-[56px] leading-tight tracking-[-0.03em]">
@@ -44,21 +78,16 @@ export default function Home() {
                   <p className="text-text-white font-medium text-base max-w-[480px]">
                     Curated pre-owned motorcycles from the world's most sought-after brands since 2015
                   </p>
-                  <Button asLink to="/inventory" variant="inverse">
-                    Browse Bikes
-                  </Button>
+                  <Button asLink to="/inventory" variant="inverse">Browse Bikes</Button>
                 </div>
               </FadeIn>
             </div>
-
-            {/* Right */}
             <div className="flex flex-col justify-between items-end h-full py-8">
               <FadeIn direction="left" delay={0.4}>
                 <div className="hero-search-container bg-white/10 backdrop-blur-md px-4 py-2 border border-white/20 text-white w-[206px]">
                   <input type="text" placeholder="Search bikes..." className="hero-search-bar bg-transparent outline-none text-white placeholder-white/70" />
                 </div>
               </FadeIn>
-
               <StaggerContainer delayChildren={0.6} staggerChildren={0.2} className="flex flex-col gap-4 mt-auto items-end">
                 <StaggerItem>
                   <div className="flex flex-col items-end">
@@ -74,13 +103,96 @@ export default function Home() {
                 </StaggerItem>
               </StaggerContainer>
             </div>
-
           </div>
         </div>
       </section>
 
-      {/* ─── FEATURED BIKES SECTION ───────────────────── */}
-      <section className="w-full bg-background-main py-20 flex flex-col items-center">
+      {/* ── Mobile Hero ── */}
+      <section className="mobile-only w-full bg-background-main pt-[88px] pb-0 px-0">
+        <motion.div
+          className="mobile-hero"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
+        >
+          <div className="mobile-hero-bg">
+            <img src={heroImage} alt="KL7 Garage" />
+          </div>
+          <div className="mobile-hero-overlay" />
+          <div className="mobile-hero-content">
+            <motion.div
+              initial={{ opacity: 0, y: 24 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: 0.2, ease: [0.22, 1, 0.36, 1] }}
+            >
+              <div className="mobile-hero-eyebrow">
+                <span className="mobile-hero-dot" />
+                <span>KL7 Garage · Est. 2015</span>
+              </div>
+            </motion.div>
+
+            <motion.h1
+              className="mobile-hero-title"
+              initial={{ opacity: 0, y: 28 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.65, delay: 0.32, ease: [0.22, 1, 0.36, 1] }}
+            >
+              KL's Premier Bike Showroom
+            </motion.h1>
+
+            <motion.p
+              className="mobile-hero-sub"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: 0.44, ease: [0.22, 1, 0.36, 1] }}
+            >
+              Curated pre-owned motorcycles from the world's most sought-after brands.
+            </motion.p>
+
+            <motion.div
+              className="mobile-hero-stats"
+              initial={{ opacity: 0, y: 16 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: 0.54, ease: [0.22, 1, 0.36, 1] }}
+            >
+              <div className="mobile-hero-stat">
+                <span className="mobile-hero-stat-num">500+</span>
+                <span className="mobile-hero-stat-label">Bikes Sold</span>
+              </div>
+              <div className="mobile-hero-stat">
+                <span className="mobile-hero-stat-num">RM 40M</span>
+                <span className="mobile-hero-stat-label">Sales Value</span>
+              </div>
+              <div className="mobile-hero-stat">
+                <span className="mobile-hero-stat-num">5.0★</span>
+                <span className="mobile-hero-stat-label">Google Rating</span>
+              </div>
+            </motion.div>
+
+            <motion.div
+              initial={{ opacity: 0, y: 16 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: 0.64, ease: [0.22, 1, 0.36, 1] }}
+            >
+              <Link to="/inventory" className="mobile-hero-cta">
+                Browse Bikes
+                <span className="mobile-hero-cta-icon">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                    <polyline points="9 18 15 12 9 6" />
+                  </svg>
+                </span>
+              </Link>
+            </motion.div>
+          </div>
+        </motion.div>
+      </section>
+
+      {/* ══════════════════════════════════════════════════
+          FEATURED BIKES
+      ══════════════════════════════════════════════════ */}
+
+      {/* ── Desktop ── */}
+      <section className="desktop-only w-full bg-background-main py-20 flex flex-col items-center">
         <div className="max-w-[1480px] w-full px-8 flex flex-col gap-10">
           <FadeIn direction="up">
             <div className="flex flex-row justify-between items-end w-full">
@@ -89,54 +201,101 @@ export default function Home() {
                 <h2 className="text-[48px] font-bold leading-tight tracking-[-0.03em]">Performance Meets Prestige</h2>
               </div>
               <div className="flex flex-col items-end gap-6">
-                <Button asLink to="/inventory" variant="primary">
-                  Browse Bikes
-                </Button>
+                <Button asLink to="/inventory" variant="primary">Browse Bikes</Button>
                 <p className="text-text-black-muted max-w-[480px] text-right">
                   Handpicked from our collection. Each one represents the pinnacle of motorcycling excellence.
                 </p>
               </div>
             </div>
           </FadeIn>
-
-          {/* Grid */}
           <StaggerContainer delayChildren={0.2} staggerChildren={0.15} className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 mt-10">
             {getFeaturedInventory().slice(0, 3).map((item) => (
-              <StaggerItem key={item.id}>
-                <CarsCard item={item} />
-              </StaggerItem>
+              <StaggerItem key={item.id}><CarsCard item={item} /></StaggerItem>
             ))}
           </StaggerContainer>
         </div>
       </section>
 
-      {/* ─── SERVICES SECTION ─────────────────────────── */}
-      <section className="w-full bg-background-main py-20 flex flex-col items-center">
-        <div className="max-w-[1480px] w-full px-8 flex flex-col gap-20">
+      {/* ── Mobile Bike Carousel ── */}
+      <section className="mobile-only mobile-section">
+        <div className="mobile-section-inner">
+          <div className="mobile-section-header">
+            <span className="mobile-eyebrow">Featured Bikes</span>
+            <h2 className="mobile-section-title">Performance Meets Prestige</h2>
+            <p className="mobile-section-body">Handpicked from our collection. Each one the pinnacle of motorcycling excellence.</p>
+          </div>
+        </div>
+        <div className="mobile-bike-carousel">
+          {featuredBikes.map((item) => {
+            const { slug, fieldData } = item;
+            const {
+              yhmUaSJgn: image, i251F_cLI: name, AsGqvZIRE: year,
+              ieALPznS3: price, FixYCUMxe: mileage, XKcYqdDj3: fuel,
+              DUdYPJIP0: transmission, oBzwmlvOK: badge
+            } = fieldData;
+            return (
+              <Link key={item.id} to={`/inventory/${slug}`} className="mobile-bike-carousel-card">
+                <div className="mobile-bike-card-img">
+                  {image?.value
+                    ? <img src={image.value} alt={name?.value} />
+                    : <div style={{ color: '#aaa', fontSize: 12 }}>No image</div>
+                  }
+                  {badge?.value?.trim() && (
+                    <span className="mobile-bike-card-badge">{badge.value}</span>
+                  )}
+                  {year?.value && (
+                    <span className="mobile-bike-card-year">{year.value}</span>
+                  )}
+                </div>
+                <div className="mobile-bike-card-body">
+                  <p className="mobile-bike-card-name">{name?.value}</p>
+                  <p className="mobile-bike-card-price">RM {price?.value?.toLocaleString?.() ?? price?.value}</p>
+                  <div className="mobile-bike-card-specs">
+                    <span className="mobile-bike-spec-pill">
+                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                      {mileage?.value?.toLocaleString?.() ?? 0} mi
+                    </span>
+                    <span className="mobile-bike-spec-pill">
+                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 15v4c0 1.1.9 2 2 2h14a2 2 0 0 0 2-2v-4M17 9l-5-5-5 5M12 4v12"/></svg>
+                      {fuel?.value ?? 'Petrol'}
+                    </span>
+                    <span className="mobile-bike-spec-pill">⚙ {transmission?.value?.split('-')[0] ?? 'Auto'}</span>
+                  </div>
+                </div>
+              </Link>
+            );
+          })}
+        </div>
+        <Link to="/inventory" className="mobile-view-all-link">
+          View All Bikes
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+            <polyline points="9 18 15 12 9 6" />
+          </svg>
+        </Link>
+      </section>
 
+      {/* ══════════════════════════════════════════════════
+          SERVICES
+      ══════════════════════════════════════════════════ */}
+
+      {/* ── Desktop ── */}
+      <section className="desktop-only w-full bg-background-main py-20 flex flex-col items-center">
+        <div className="max-w-[1480px] w-full px-8 flex flex-col gap-20">
           <FadeIn direction="up">
             <div className="flex flex-row justify-between items-start w-full">
               <div className="flex flex-col gap-4 max-w-[550px]">
                 <div className="bg-white border border-grey-main rounded-full px-4 py-2 w-fit">
                   <span className="text-base font-medium uppercase tracking-wider">SERVICES</span>
                 </div>
-                <h2 className="text-[48px] font-bold leading-tight tracking-[-0.03em] max-w-[480px]">
-                  We're Way More Than a Showroom
-                </h2>
+                <h2 className="text-[48px] font-bold leading-tight tracking-[-0.03em] max-w-[480px]">We're Way More Than a Showroom</h2>
               </div>
               <div className="flex flex-col gap-6 items-start self-end max-w-[480px]">
-                <p className="text-text-black font-medium text-base">
-                  Premium bikes deserve premium service—and that's exactly what you'll get.
-                </p>
-                <Button asLink to="/inventory" variant="primary">
-                  Browse Bikes
-                </Button>
+                <p className="text-text-black font-medium text-base">Premium bikes deserve premium service—and that's exactly what you'll get.</p>
+                <Button asLink to="/inventory" variant="primary">Browse Bikes</Button>
               </div>
             </div>
           </FadeIn>
-
           <StaggerContainer delayChildren={0.2} staggerChildren={0.15} className="flex flex-col lg:flex-row gap-6 h-[800px]">
-            {/* Left Column */}
             <div className="flex flex-col gap-6 w-full lg:w-1/2 h-full">
               <StaggerItem className="w-full h-1/2">
                 <div className="w-full h-full relative rounded-[12px] overflow-hidden p-5 flex flex-col justify-end group cursor-pointer">
@@ -157,8 +316,6 @@ export default function Home() {
                 </div>
               </StaggerItem>
             </div>
-
-            {/* Right Column */}
             <div className="flex flex-col gap-6 w-full lg:w-1/2 h-full">
               <StaggerItem className="w-full h-[40%]">
                 <div className="w-full h-full bg-black-main rounded-[16px] relative overflow-hidden p-5 flex flex-col justify-end items-center group cursor-pointer">
@@ -168,7 +325,6 @@ export default function Home() {
                   <h3 className="text-white font-medium text-2xl z-10 transition-transform duration-300 group-hover:-translate-y-1">Verified History & Trusted Brand</h3>
                 </div>
               </StaggerItem>
-
               <StaggerItem className="w-full h-[30%]">
                 <div className="w-full h-full relative rounded-[16px] overflow-hidden p-5 flex flex-col justify-end items-center group cursor-pointer">
                   <div className="absolute inset-0 z-0">
@@ -178,7 +334,6 @@ export default function Home() {
                   <h3 className="text-white font-medium text-2xl z-10 transition-transform duration-300 group-hover:-translate-y-1">Warranty Support</h3>
                 </div>
               </StaggerItem>
-
               <StaggerItem className="w-full h-[30%]">
                 <div className="w-full h-full relative rounded-[16px] overflow-hidden p-5 flex flex-row justify-center items-end group cursor-pointer">
                   <div className="absolute inset-0 z-0">
@@ -193,57 +348,83 @@ export default function Home() {
         </div>
       </section>
 
-      {/* ─── TESTIMONIALS SECTION ─────────────────────── */}
-      <section className="w-full bg-background-main py-20 flex flex-col items-center">
-        <div className="max-w-[1480px] w-full px-8 flex flex-col gap-20">
+      {/* ── Mobile Services ── */}
+      <section className="mobile-only mobile-section">
+        <div className="mobile-section-inner">
+          <div className="mobile-section-header">
+            <span className="mobile-eyebrow">Services</span>
+            <h2 className="mobile-section-title">More Than a Showroom</h2>
+            <p className="mobile-section-body">Premium bikes deserve premium service—and that's exactly what you'll get.</p>
+          </div>
+        </div>
+        <div className="mobile-services-list" style={{ padding: '0 20px' }}>
+          <a className="mobile-service-card" style={{ height: 200 }}>
+            <img src="https://framerusercontent.com/images/ePT9kuMpmdFFmnCqOllNvONQys.webp" alt="Inspection" />
+            <div className="mobile-service-overlay" />
+            <div className="mobile-service-card-body">
+              <h3 className="mobile-service-card-title">Full Technical Inspection</h3>
+            </div>
+          </a>
+          <a className="mobile-service-card" style={{ height: 180 }}>
+            <img src="https://framerusercontent.com/images/WyhRtolqAtg9ZPTE92NjlKjv0.webp" alt="Detailing" />
+            <div className="mobile-service-overlay" />
+            <div className="mobile-service-card-body">
+              <h3 className="mobile-service-card-title">Professional Detailing</h3>
+            </div>
+          </a>
+          <div className="mobile-service-card-dark">
+            <h3>Verified History & Trusted Brand</h3>
+            <div className="mobile-service-icon-circle">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.6)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+              </svg>
+            </div>
+          </div>
+          <a className="mobile-service-card" style={{ height: 160 }}>
+            <img src="https://framerusercontent.com/images/TcgsebcRv5iSa7dvNbl6PMQECA.webp" alt="Warranty" />
+            <div className="mobile-service-overlay" />
+            <div className="mobile-service-card-body">
+              <h3 className="mobile-service-card-title">Warranty Support</h3>
+            </div>
+          </a>
+          <a className="mobile-service-card" style={{ height: 160 }}>
+            <img src="https://framerusercontent.com/images/DKYMPBTwzZsENhq8F0kqQLKshtw.jpg" alt="Financing" />
+            <div className="mobile-service-overlay" />
+            <div className="mobile-service-card-body">
+              <h3 className="mobile-service-card-title">Loan & Financing</h3>
+            </div>
+          </a>
+        </div>
+      </section>
 
+      {/* ══════════════════════════════════════════════════
+          TESTIMONIALS / STATS
+      ══════════════════════════════════════════════════ */}
+
+      {/* ── Desktop ── */}
+      <section className="desktop-only w-full bg-background-main py-20 flex flex-col items-center">
+        <div className="max-w-[1480px] w-full px-8 flex flex-col gap-20">
           <FadeIn direction="up">
             <div className="flex flex-row justify-between items-start w-full">
               <div className="flex flex-col gap-4 max-w-[550px]">
                 <div className="bg-white border border-grey-main rounded-full px-4 py-2 w-fit">
                   <span className="text-base font-medium uppercase tracking-wider">TESTIMONIALS</span>
                 </div>
-                <h2 className="text-[48px] font-bold leading-tight tracking-[-0.03em] max-w-[480px]">
-                  Great Numbers, Happy Riders.
-                </h2>
+                <h2 className="text-[48px] font-bold leading-tight tracking-[-0.03em] max-w-[480px]">Great Numbers, Happy Riders.</h2>
               </div>
               <div className="flex flex-col gap-6 items-start self-end max-w-[480px]">
-                <p className="text-text-black font-medium text-base">
-                  Real experiences from riders who found their dream bike and trusted us completely.
-                </p>
-                <Button asLink to="/inventory" variant="primary">
-                  Browse Bikes
-                </Button>
+                <p className="text-text-black font-medium text-base">Real experiences from riders who found their dream bike and trusted us completely.</p>
+                <Button asLink to="/inventory" variant="primary">Browse Bikes</Button>
               </div>
             </div>
           </FadeIn>
-
           <StaggerContainer delayChildren={0.2} staggerChildren={0.1} className="flex flex-col lg:flex-row gap-6">
-            {/* Left Column - Testimonials Grid */}
             <div className="w-full lg:w-[65%] grid grid-cols-1 md:grid-cols-2 gap-6">
-              <StaggerItem><TestimonialCard
-                name="Amir Razali"
-                quote="Outstanding service from start to finish, truly professional team and exceptional bike quality throughout"
-                vehicle="Ducati Panigale V4 Owner"
-              /></StaggerItem>
-              <StaggerItem><TestimonialCard
-                name="Haziq Farhan"
-                quote="Transparent pricing, honest advice, and zero pressure—exactly what buying a pre-owned bike should be"
-                vehicle="Honda CBR1000RR Owner"
-              /></StaggerItem>
-              <StaggerItem><TestimonialCard
-                name="Syafiq Danial"
-                quote="Incredible selection of pristine bikes, each one meticulously inspected and beautifully presented to perfection"
-                vehicle="Kawasaki Ninja ZX-10R Owner"
-              /></StaggerItem>
-              <StaggerItem><TestimonialCard
-                name="Daniel Lim"
-                quote="Knowledgeable team who genuinely care, made finding my dream ride effortless and enjoyable"
-                vehicle="BMW S1000RR Owner"
-              /></StaggerItem>
+              <StaggerItem><TestimonialCard name="Amir Razali" quote="Outstanding service from start to finish, truly professional team and exceptional bike quality throughout" vehicle="Ducati Panigale V4 Owner" /></StaggerItem>
+              <StaggerItem><TestimonialCard name="Haziq Farhan" quote="Transparent pricing, honest advice, and zero pressure—exactly what buying a pre-owned bike should be" vehicle="Honda CBR1000RR Owner" /></StaggerItem>
+              <StaggerItem><TestimonialCard name="Syafiq Danial" quote="Incredible selection of pristine bikes, each one meticulously inspected and beautifully presented to perfection" vehicle="Kawasaki Ninja ZX-10R Owner" /></StaggerItem>
+              <StaggerItem><TestimonialCard name="Daniel Lim" quote="Knowledgeable team who genuinely care, made finding my dream ride effortless and enjoyable" vehicle="BMW S1000RR Owner" /></StaggerItem>
             </div>
-
-            {/* Right Column - Metrics */}
             <div className="w-full lg:w-[35%] flex flex-col gap-6">
               <StaggerItem className="h-[180px]">
                 <div className="bg-background-mid rounded-2xl p-6 flex flex-col justify-between h-full hover:-translate-y-1 hover:shadow-lg transition-all duration-300">
@@ -251,14 +432,12 @@ export default function Home() {
                   <span className="text-text-black font-medium text-base">Years of Experience</span>
                 </div>
               </StaggerItem>
-
               <StaggerItem className="h-[240px]">
                 <div className="bg-background-mid rounded-2xl p-6 flex flex-col justify-between h-full hover:-translate-y-1 hover:shadow-lg transition-all duration-300">
                   <CountUp targetNumber={500} duration={2.5} fontSize={58} lineHeight={58} color="#000000" fontWeight="500" />
                   <span className="text-text-black font-medium text-base">Happy Riders</span>
                 </div>
               </StaggerItem>
-
               <StaggerItem className="h-[120px]">
                 <div className="bg-background-main rounded-none flex flex-col justify-end items-start h-full gap-2 pt-6">
                   <div className="flex gap-2 items-center bg-white border border-grey-main rounded-full px-4 py-2 hover:bg-background-mid cursor-pointer transition-colors">
@@ -273,76 +452,139 @@ export default function Home() {
         </div>
       </section>
 
-      {/* ─── TEAM SECTION ─────────────────────────────── */}
-      <section className="w-full bg-background-main py-20 flex flex-col items-center">
+      {/* ── Mobile Stats ── */}
+      <section className="mobile-only mobile-section">
+        <div className="mobile-section-inner">
+          <div className="mobile-section-header">
+            <span className="mobile-eyebrow">By the Numbers</span>
+            <h2 className="mobile-section-title">Great Numbers, Happy Riders.</h2>
+          </div>
+        </div>
+        <div className="mobile-stats-scroll">
+          <div className="mobile-stat-card">
+            <span className="mobile-stat-card-num">10+</span>
+            <span className="mobile-stat-card-label">Years in Business</span>
+          </div>
+          <div className="mobile-stat-card">
+            <span className="mobile-stat-card-num">500+</span>
+            <span className="mobile-stat-card-label">Happy Riders</span>
+          </div>
+          <div className="mobile-stat-card">
+            <span className="mobile-stat-card-num">RM40M</span>
+            <span className="mobile-stat-card-label">Sales Value</span>
+          </div>
+          <div className="mobile-stat-card-rating">
+            <span className="stars">★★★★★</span>
+            <span className="rating-score">5.0</span>
+            <span className="rating-label">Google · 1000+ reviews</span>
+          </div>
+        </div>
+
+        {/* Testimonials Scroll */}
+        <div style={{ marginTop: 28 }}>
+          <div className="mobile-section-inner" style={{ marginBottom: 16 }}>
+            <span className="mobile-eyebrow">Testimonials</span>
+          </div>
+          <div className="mobile-testimonial-scroll">
+            {[
+              { name: "Amir Razali", quote: "Outstanding service from start to finish. Truly professional team and exceptional bike quality throughout.", vehicle: "Ducati Panigale V4 Owner" },
+              { name: "Haziq Farhan", quote: "Transparent pricing, honest advice, and zero pressure—exactly what buying a pre-owned bike should be.", vehicle: "Honda CBR1000RR Owner" },
+              { name: "Syafiq Danial", quote: "Incredible selection of pristine bikes, each one meticulously inspected and beautifully presented.", vehicle: "Kawasaki Ninja ZX-10R Owner" },
+              { name: "Daniel Lim", quote: "Knowledgeable team who genuinely care. Made finding my dream ride effortless and enjoyable.", vehicle: "BMW S1000RR Owner" },
+            ].map((t, i) => (
+              <div key={i} className="mobile-testimonial-card">
+                <p className="mobile-testimonial-quote">"{t.quote}"</p>
+                <div className="mobile-testimonial-author">
+                  <span className="mobile-testimonial-name">{t.name}</span>
+                  <span className="mobile-testimonial-vehicle">{t.vehicle}</span>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ══════════════════════════════════════════════════
+          TEAM
+      ══════════════════════════════════════════════════ */}
+
+      {/* ── Desktop ── */}
+      <section className="desktop-only w-full bg-background-main py-20 flex flex-col items-center">
         <div className="max-w-[1480px] w-full px-8 flex flex-col gap-20">
           <FadeIn direction="up">
             <div className="flex flex-col-reverse lg:flex-row justify-between items-center w-full gap-20">
-
-              {/* Left - Team Members */}
               <StaggerContainer delayChildren={0.2} staggerChildren={0.15} className="flex flex-col md:flex-row w-full lg:w-[60%] gap-6 items-center md:items-end">
                 <StaggerItem className="w-full md:w-1/2">
-                  <TeamMemberCard
-                    name="Farid Hasan"
-                    role="Sales Director"
-                    height="324px"
-                    image="https://framerusercontent.com/images/1yWlVlCg6wQ01Y2X6qA0K0xG0E.webp"
-                  />
+                  <TeamMemberCard name="Farid Hasan" role="Sales Director" height="324px" image="https://framerusercontent.com/images/1yWlVlCg6wQ01Y2X6qA0K0xG0E.webp" />
                 </StaggerItem>
                 <StaggerItem className="w-full md:w-1/2">
-                  <TeamMemberCard
-                    name="Nurul Ain"
-                    role="Founder & CEO"
-                    height="424px"
-                    image="https://framerusercontent.com/images/xH1B6Z4I9v3R8fK7M2W5B9T4.webp"
-                  />
+                  <TeamMemberCard name="Nurul Ain" role="Founder & CEO" height="424px" image="https://framerusercontent.com/images/xH1B6Z4I9v3R8fK7M2W5B9T4.webp" />
                 </StaggerItem>
               </StaggerContainer>
-
-              {/* Right - Content */}
               <div className="flex flex-col gap-6 w-full lg:w-[40%] self-start">
                 <div className="bg-white border border-grey-main rounded-full px-4 py-2 w-fit">
                   <span className="text-base font-medium uppercase tracking-wider">OUR TEAM</span>
                 </div>
-                <h2 className="text-[48px] font-bold leading-tight tracking-[-0.03em] max-w-[480px]">
-                  Meet The Experts.
-                </h2>
-                <p className="text-text-black font-medium text-base mt-2">
-                  Passionate about bikes, precision, and exceptional service. Meet the people who make it happen.
-                </p>
-                <Button asLink to="/about-us" variant="primary" className="mt-2">
-                  Learn More
-                </Button>
+                <h2 className="text-[48px] font-bold leading-tight tracking-[-0.03em] max-w-[480px]">Meet The Experts.</h2>
+                <p className="text-text-black font-medium text-base mt-2">Passionate about bikes, precision, and exceptional service. Meet the people who make it happen.</p>
+                <Button asLink to="/about-us" variant="primary" className="mt-2">Learn More</Button>
               </div>
-
             </div>
           </FadeIn>
         </div>
       </section>
 
-      {/* ─── BLOG SECTION ─────────────────────────────── */}
-      <section className="w-full bg-background-main py-20 flex flex-col items-center">
+      {/* ── Mobile Team ── */}
+      <section className="mobile-only mobile-section">
+        <div className="mobile-section-inner">
+          <div className="mobile-section-header">
+            <span className="mobile-eyebrow">Our Team</span>
+            <h2 className="mobile-section-title">Meet the Experts.</h2>
+            <p className="mobile-section-body">Passionate about bikes, precision, and exceptional service.</p>
+          </div>
+        </div>
+        <div className="mobile-team-scroll">
+          {[
+            { name: "Farid Hasan", role: "Sales Director", image: "https://framerusercontent.com/images/1yWlVlCg6wQ01Y2X6qA0K0xG0E.webp" },
+            { name: "Nurul Ain", role: "Founder & CEO", image: "https://framerusercontent.com/images/xH1B6Z4I9v3R8fK7M2W5B9T4.webp" },
+          ].map((m, i) => (
+            <div key={i} className="mobile-team-card">
+              <img src={m.image} alt={m.name} />
+              <div className="mobile-team-gradient" />
+              <div className="mobile-team-info">
+                <p className="mobile-team-name">{m.name}</p>
+                <p className="mobile-team-role">{m.role}</p>
+              </div>
+            </div>
+          ))}
+        </div>
+        <div className="mobile-section-inner" style={{ marginTop: 20 }}>
+          <Link to="/about-us" className="mobile-view-all-link" style={{ margin: 0 }}>
+            Meet the Full Team
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+              <polyline points="9 18 15 12 9 6" />
+            </svg>
+          </Link>
+        </div>
+      </section>
+
+      {/* ══════════════════════════════════════════════════
+          BLOG
+      ══════════════════════════════════════════════════ */}
+
+      {/* ── Desktop ── */}
+      <section className="desktop-only w-full bg-background-main py-20 flex flex-col items-center">
         <div className="max-w-[1480px] w-full px-8 flex flex-col gap-20">
           <FadeIn direction="up">
             <div className="flex flex-col lg:flex-row justify-between items-start w-full gap-20">
-
-              {/* Left Content */}
               <div className="flex flex-col gap-6 w-full lg:w-[40%]">
                 <div className="bg-white border border-grey-main rounded-full px-4 py-2 w-fit">
                   <span className="text-base font-medium uppercase tracking-wider">BLOG</span>
                 </div>
-                <h2 className="text-[48px] font-bold leading-tight tracking-[-0.03em] max-w-[480px]">
-                  Insights & Expertise Now
-                </h2>
-                <p className="text-text-black font-medium text-base mt-2">
-                  Market trends, buying guides, and insider knowledge to help you make smarter decisions.
-                </p>
-                <Button asLink to="/journal" variant="primary" className="mt-2">
-                  View All
-                </Button>
+                <h2 className="text-[48px] font-bold leading-tight tracking-[-0.03em] max-w-[480px]">Insights & Expertise Now</h2>
+                <p className="text-text-black font-medium text-base mt-2">Market trends, buying guides, and insider knowledge to help you make smarter decisions.</p>
+                <Button asLink to="/journal" variant="primary" className="mt-2">View All</Button>
               </div>
-
-              {/* Right Content - Blog Grid */}
               <StaggerContainer delayChildren={0.2} staggerChildren={0.15} className="w-full lg:w-[60%] grid grid-cols-1 md:grid-cols-2 gap-6">
                 {getFeaturedBlog().slice(0, 2).map((post) => (
                   <StaggerItem key={post.id} className="min-h-[384px]">
@@ -350,65 +592,131 @@ export default function Home() {
                   </StaggerItem>
                 ))}
               </StaggerContainer>
-
             </div>
           </FadeIn>
         </div>
       </section>
 
-      {/* ─── CTA SECTION ──────────────────────────────── */}
-      <section className="w-full bg-background-main py-10 flex flex-col items-center">
+      {/* ── Mobile Blog ── */}
+      <section className="mobile-only mobile-section">
+        <div className="mobile-section-inner">
+          <div className="mobile-section-header">
+            <span className="mobile-eyebrow">Blog</span>
+            <h2 className="mobile-section-title">Insights & Expertise</h2>
+            <p className="mobile-section-body">Market trends, buying guides, and insider knowledge.</p>
+          </div>
+        </div>
+        <div className="mobile-blog-list">
+          {featuredPosts.map((post) => {
+            const { slug, fieldData } = post;
+            const { ems8fj_dg: image, vE5dzHwR_: title, Kbtb6KX_T: excerpt } = fieldData;
+            return (
+              <Link key={post.id} to={`/blog/${slug}`} className="mobile-blog-card">
+                <div className="mobile-blog-card-img">
+                  {image?.value
+                    ? <img src={image.value} alt={title?.value} />
+                    : <div style={{ width: '100%', height: '100%', background: '#eee' }} />
+                  }
+                </div>
+                <div className="mobile-blog-card-body">
+                  <span className="mobile-blog-card-category">Insights</span>
+                  <h3 className="mobile-blog-card-title">{title?.value}</h3>
+                  <p className="mobile-blog-card-excerpt">{excerpt?.value}</p>
+                  <div className="mobile-blog-read-more">
+                    Read Article
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                      <polyline points="9 18 15 12 9 6" />
+                    </svg>
+                  </div>
+                </div>
+              </Link>
+            );
+          })}
+        </div>
+        <div className="mobile-section-inner" style={{ marginTop: 20 }}>
+          <Link to="/journal" className="mobile-view-all-link" style={{ margin: 0 }}>
+            View All Articles
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+              <polyline points="9 18 15 12 9 6" />
+            </svg>
+          </Link>
+        </div>
+      </section>
+
+      {/* ══════════════════════════════════════════════════
+          CTA
+      ══════════════════════════════════════════════════ */}
+
+      {/* ── Desktop ── */}
+      <section className="desktop-only w-full bg-background-main py-10 flex flex-col items-center">
         <div className="max-w-[1480px] w-full px-8 relative flex flex-col justify-center items-start min-h-[400px] rounded-[24px] overflow-hidden p-16">
           <div className="absolute inset-0 z-0">
             <img src="https://framerusercontent.com/images/Uo8cUllDqyVPZ0KESUwPobILA.png" alt="CTA Background" className="w-full h-full object-cover" />
             <div className="absolute inset-0 bg-black/40" />
           </div>
-
           <FadeIn direction="up" fullWidth>
             <div className="relative z-10 flex flex-col gap-6 max-w-[50%]">
-              <h2 className="text-[48px] font-bold leading-tight tracking-[-0.03em] text-white">
-                Ready to Find Your Dream Bike?
-              </h2>
-              <p className="text-white/90 font-medium text-base">
-                Visit our showroom and feel what true performance means. Every bike available for immediate viewing.
-              </p>
-              <Button asLink to="/contact" variant="inverse" className="mt-2">
-                Visit Showroom
-              </Button>
+              <h2 className="text-[48px] font-bold leading-tight tracking-[-0.03em] text-white">Ready to Find Your Dream Bike?</h2>
+              <p className="text-white/90 font-medium text-base">Visit our showroom and feel what true performance means. Every bike available for immediate viewing.</p>
+              <Button asLink to="/contact" variant="inverse" className="mt-2">Visit Showroom</Button>
             </div>
           </FadeIn>
         </div>
       </section>
 
-      {/* ─── FAQ SECTION ──────────────────────────────── */}
-      <section className="w-full bg-background-main py-20 flex flex-col items-center">
-        <div className="max-w-[1480px] w-full px-8 flex flex-col lg:flex-row gap-20">
+      {/* ── Mobile CTA ── */}
+      <section className="mobile-only mobile-section">
+        <div className="mobile-cta-banner">
+          <img src="https://framerusercontent.com/images/Uo8cUllDqyVPZ0KESUwPobILA.png" alt="CTA" />
+          <div className="mobile-cta-banner-overlay" />
+          <div className="mobile-cta-content">
+            <h2 className="mobile-cta-title">Ready to Find Your Dream Bike?</h2>
+            <p className="mobile-cta-sub">Visit our showroom and feel what true performance means. Every bike available for immediate viewing.</p>
+            <Link to="/contact" className="mobile-cta-btn">
+              Visit Showroom
+              <span className="mobile-hero-cta-icon">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                  <polyline points="9 18 15 12 9 6" />
+                </svg>
+              </span>
+            </Link>
+          </div>
+        </div>
+      </section>
 
+      {/* ══════════════════════════════════════════════════
+          FAQ
+      ══════════════════════════════════════════════════ */}
+
+      {/* ── Desktop ── */}
+      <section className="desktop-only w-full bg-background-main py-20 flex flex-col items-center">
+        <div className="max-w-[1480px] w-full px-8 flex flex-col lg:flex-row gap-20">
           <FadeIn direction="up">
             <div className="flex flex-col gap-6 w-full lg:w-1/2">
               <div className="bg-white border border-grey-main rounded-full px-4 py-2 w-fit">
                 <span className="text-base font-medium uppercase tracking-wider">FAQ</span>
               </div>
-              <h2 className="text-[48px] font-bold leading-tight tracking-[-0.03em] max-w-[480px]">
-                Everything You Need Here
-              </h2>
-              <p className="text-text-black font-medium text-base mt-2">
-                Everything you need to know about financing, warranties, and buying a bike with confidence.
-              </p>
+              <h2 className="text-[48px] font-bold leading-tight tracking-[-0.03em] max-w-[480px]">Everything You Need Here</h2>
+              <p className="text-text-black font-medium text-base mt-2">Everything you need to know about financing, warranties, and buying a bike with confidence.</p>
             </div>
           </FadeIn>
-
           <FadeIn direction="up" delay={0.2} className="w-full lg:w-1/2">
-            <FaqAccordion items={[
-              { question: "What loan options do you offer?", answer: "We work with a wide network of banks and lenders to offer flexible hire purchase plans—whether you're buying a sports, adventure, or classic bike. Our finance team will walk you through competitive rates and payment plans tailored to your budget. Pre-approval is available within the same day." },
-              { question: "Can I trade in my current bike?", answer: "Absolutely. We accept trade-ins on all makes and models. Bring your bike in for a free, no-obligation appraisal, and we'll apply its value directly toward your next purchase." },
-              { question: "Do your used bikes come with a warranty?", answer: "All bikes in our inventory go through a rigorous multi-point inspection and come with a limited warranty. Extended protection plans are also available for added peace of mind." },
-              { question: "How do I schedule a viewing?", answer: "You can book a viewing directly on our website or call our showroom. We're open 7 days a week and happy to accommodate same-day appointments." },
-              { question: "Do you offer delivery?", answer: "Yes. We offer delivery within the Klang Valley. Once your paperwork is finalised, we'll coordinate a convenient time to bring your bike directly to you." },
-            ]} />
+            <FaqAccordion items={faqItems} />
           </FadeIn>
-
         </div>
+      </section>
+
+      {/* ── Mobile FAQ ── */}
+      <section className="mobile-only mobile-section">
+        <div className="mobile-section-inner">
+          <div className="mobile-section-header">
+            <span className="mobile-eyebrow">FAQ</span>
+            <h2 className="mobile-section-title">Everything You Need Here</h2>
+            <p className="mobile-section-body">Financing, warranties, and buying with full confidence.</p>
+          </div>
+        </div>
+        <MobileFaq items={faqItems} />
+        <div style={{ height: 40 }} />
       </section>
 
     </div>
