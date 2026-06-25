@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { motion, AnimatePresence, useScroll, useTransform } from 'framer-motion';
 import Button from './Button';
 import kl7logo from '../assets/kl7logo.png';
@@ -7,7 +7,6 @@ import kl7logo from '../assets/kl7logo.png';
 export default function Nav() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const { scrollY } = useScroll();
-  const navigate = useNavigate();
 
   const backgroundColor = useTransform(
     scrollY,
@@ -35,17 +34,19 @@ export default function Nav() {
     { label: 'Contact', to: '/contact' },
   ];
 
+  const adminUrl = import.meta.env.VITE_ADMIN_URL ?? 'http://localhost:5174';
+
   const ProfileIcon = () => (
-    <button
-      onClick={() => navigate('/admin/login')}
+    <a
+      href={`${adminUrl}/login`}
       className="w-[46px] h-[46px] rounded-full flex items-center justify-center border border-grey-main bg-white text-black transition-transform hover:scale-105 flex-shrink-0"
-      title="Admin Login"
+      title="Admin Dashboard"
     >
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
         <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
         <circle cx="12" cy="7" r="4" />
       </svg>
-    </button>
+    </a>
   );
 
   return (

@@ -1,4 +1,4 @@
-import supabase from "@/config/supabaseclient";
+import supabase from "@/config/SupabaseClient";
 import { mapSellEnquiry } from "@/types/sellEnquiry.types";
 import type { SellEnquiryRow, SellEnquiry, SellEnquiryStatus } from "@/types/sellEnquiry.types";
 
