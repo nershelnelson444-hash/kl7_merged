@@ -10,6 +10,7 @@ import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/context/AuthContext";
 import { toast } from "sonner";
+import kl7Logo from "@/assets/kl7logo.png";
 
 const loginSchema = z.object({
   email: z.string().min(1, "Email is required").email("Enter a valid email address"),
@@ -41,7 +42,7 @@ export default function Login() {
   const onSubmit = async (values: LoginForm) => {
     try {
       await login(values);
-      toast.success("Welcome back to KL7 Garage");
+      toast.success("Welcome back!");
       navigate((location.state as { from?: string } | null)?.from ?? "/", { replace: true });
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Couldn't sign you in.");
@@ -61,10 +62,7 @@ export default function Login() {
           }}
         />
         <div className="relative flex items-center gap-3">
-          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-lime font-display text-base font-bold text-lime-ink">
-            K7
-          </div>
-          <span className="font-display text-lg font-bold tracking-tight">KL7 GARAGE</span>
+          <img src={kl7Logo} alt="KL7 Garage" className="h-14 w-auto object-contain" />
         </div>
 
         <motion.div
@@ -80,7 +78,7 @@ export default function Login() {
             Run both showrooms from one cockpit.
           </h1>
           <p className="mt-4 text-white/60">
-            Track inventory, leads and listings across Ernakulam and Aluva — built for how KL7 Garage
+            Track inventory, leads and listings across Ernakulam and Aluva — built for how the garage
             actually sells bikes.
           </p>
         </motion.div>
@@ -112,10 +110,7 @@ export default function Login() {
           className="w-full max-w-sm"
         >
           <div className="mb-8 flex items-center gap-3 lg:hidden">
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-ink font-display text-base font-bold text-lime">
-              K7
-            </div>
-            <span className="font-display text-lg font-bold tracking-tight text-ink">KL7 GARAGE</span>
+            <img src={kl7Logo} alt="KL7 Garage" className="h-12 w-auto object-contain" />
           </div>
 
           <h2 className="font-display text-2xl font-bold tracking-tight text-ink">Sign in</h2>

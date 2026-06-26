@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { signInWithGoogle } from '../firebase';
 import { signInWithEmailAndPassword } from 'firebase/auth';
 import { auth } from '../firebase';
+import loginBg from '../assets/loginpage.jpg';
 
 // --- HELPER COMPONENTS (ICONS) ---
 
@@ -19,27 +20,16 @@ const GoogleIcon = () => (
 
 // --- TYPE DEFINITIONS ---
 
-export interface Testimonial {
-  avatarSrc: string;
-  name: string;
-  handle: string;
-  text: string;
-}
-
 interface SignInPageProps {
   description?: React.ReactNode;
-  heroImageSrc?: string;
-  testimonials?: Testimonial[];
   onSignIn?: (event: React.FormEvent<HTMLFormElement>) => void;
   onGoogleSignIn?: () => void;
-  onResetPassword?: () => void;
-  onCreateAccount?: () => void;
   onBack?: () => void;
   error?: string | null;
   loading?: boolean;
 }
 
-// --- SUB-COMPONENTS ---
+// --- HELPER ---
 
 const GlassInputWrapper = ({ children }: { children: React.ReactNode }) => (
   <div className="rounded-2xl border border-gray-300 bg-white/5 backdrop-blur-sm transition-colors focus-within:border-black/70 focus-within:bg-black/5">
@@ -47,14 +37,17 @@ const GlassInputWrapper = ({ children }: { children: React.ReactNode }) => (
   </div>
 );
 
-const TestimonialCard = ({ testimonial, delay }: { testimonial: Testimonial, delay: string }) => (
-  <div className={`animate-testimonial ${delay} flex items-start gap-3 rounded-3xl bg-white/80 backdrop-blur-xl border border-gray-200 p-5 w-64 shadow-sm`}>
-    <img src={testimonial.avatarSrc} className="h-10 w-10 object-cover rounded-2xl" alt="avatar" />
-    <div className="text-sm leading-snug">
-      <p className="flex items-center gap-1 font-medium text-black">{testimonial.name}</p>
-      <p className="text-gray-500">{testimonial.handle}</p>
-      <p className="mt-1 text-gray-700">{testimonial.text}</p>
+// --- TESTIMONIAL CARD ---
+
+const TestimonialCard = ({ name, text, delay }: { name: string; text: string; delay: string }) => (
+  <div className={`${delay} flex flex-col gap-1 rounded-3xl bg-white/85 backdrop-blur-xl border border-gray-200 p-5 w-64 shadow-sm`}>
+    <p className="font-medium text-black text-sm">{name}</p>
+    <div className="flex gap-0.5">
+      {[...Array(5)].map((_, i) => (
+        <svg key={i} className="h-3 w-3 fill-amber-400" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
+      ))}
     </div>
+    <p className="text-gray-600 text-xs mt-1">{text}</p>
   </div>
 );
 
@@ -62,25 +55,8 @@ const TestimonialCard = ({ testimonial, delay }: { testimonial: Testimonial, del
 
 export const SignInPage: React.FC<SignInPageProps> = ({
   description = "Access your account and continue your journey with us",
-  heroImageSrc = "https://framerusercontent.com/images/Uo8cUllDqyVPZ0KESUwPobILA.png",
-  testimonials = [
-    {
-      avatarSrc: "https://i.pravatar.cc/150?u=a042581f4e29026024d",
-      name: "Arun Kumar",
-      handle: "@arun_k",
-      text: "Very good service. Got my bike at a very reasonable price."
-    },
-    {
-      avatarSrc: "https://i.pravatar.cc/150?u=a042581f4e29026704d",
-      name: "Vishnu V",
-      handle: "@vishnu_rides",
-      text: "Excellent experience! The team is very friendly and transparent."
-    }
-  ],
   onSignIn,
   onGoogleSignIn,
-  onResetPassword,
-  onCreateAccount,
   onBack,
   error,
   loading = false,
@@ -162,20 +138,29 @@ export const SignInPage: React.FC<SignInPageProps> = ({
         </div>
       </section>
 
-      {/* Right column: hero image + testimonials */}
-      {heroImageSrc && (
-        <section className="hidden md:block flex-1 relative p-4">
-          <div className="absolute inset-4 rounded-[32px] bg-cover bg-center overflow-hidden" style={{ backgroundImage: `url(${heroImageSrc})` }}>
-             <div className="absolute inset-0 bg-black/20" />
+      {/* Right column: hero image + reviews */}
+      <section className="hidden md:block flex-1 relative p-4">
+        <div
+          className="absolute inset-4 rounded-[32px] bg-cover bg-center overflow-hidden"
+          style={{ backgroundImage: `url(${loginBg})` }}
+        >
+          <div className="absolute inset-0 bg-black/30" />
+        </div>
+        <div className="absolute bottom-12 left-1/2 -translate-x-1/2 flex gap-4 px-8 w-full justify-center z-10">
+          <TestimonialCard
+            name="Arun Kumar"
+            text="Very good service. Got my bike at a very reasonable price. The staff was helpful and the whole process was smooth!"
+            delay=""
+          />
+          <div className="hidden xl:block">
+            <TestimonialCard
+              name="Vishnu V"
+              text="Excellent experience! The team is very friendly and transparent. No hidden charges — what they quoted is what I paid."
+              delay=""
+            />
           </div>
-          {testimonials.length > 0 && (
-            <div className="absolute bottom-12 left-1/2 -translate-x-1/2 flex gap-4 px-8 w-full justify-center z-10">
-              <TestimonialCard testimonial={testimonials[0]} delay="animate-delay-1000" />
-              {testimonials[1] && <div className="hidden xl:flex"><TestimonialCard testimonial={testimonials[1]} delay="animate-delay-1200" /></div>}
-            </div>
-          )}
-        </section>
-      )}
+        </div>
+      </section>
     </div>
   );
 };

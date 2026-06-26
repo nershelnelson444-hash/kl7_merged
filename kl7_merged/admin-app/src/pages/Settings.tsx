@@ -1,28 +1,120 @@
-import { useState } from "react";
-import { Save, MapPin, Bell, Shield, Building2 } from "lucide-react";
+import { useState, useEffect } from "react";
+import { Save, MapPin, Building2 } from "lucide-react";
 import { PageHeader } from "@/components/common/PageHeader";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Switch } from "@/components/ui/switch";
-import { Separator } from "@/components/ui/separator";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 
 const TABS = [
   { id: "general", label: "General", icon: Building2 },
   { id: "showrooms", label: "Showrooms", icon: MapPin },
-  { id: "notifications", label: "Notifications", icon: Bell },
-  { id: "security", label: "Security", icon: Shield },
 ] as const;
 
 type TabId = (typeof TABS)[number]["id"];
 
+const SETTINGS_KEY = "kl7_settings_v1";
+
+interface SettingsData {
+  general: {
+    name: string;
+    legalName: string;
+    phone: string;
+    email: string;
+    website: string;
+    gst: string;
+  };
+  ernakulam: {
+    displayName: string;
+    phone: string;
+    address: string;
+    openTime: string;
+    closeTime: string;
+  };
+  aluva: {
+    displayName: string;
+    phone: string;
+    address: string;
+    openTime: string;
+    closeTime: string;
+  };
+}
+
+const DEFAULT_SETTINGS: SettingsData = {
+  general: {
+    name: "KL7 Garage",
+    legalName: "KL7 Garage Pvt Ltd",
+    phone: "+91 98470 11122",
+    email: "contact@kl7garage.in",
+    website: "https://kl7garage.in",
+    gst: "32AABCX1234Y1Z1",
+  },
+  ernakulam: {
+    displayName: "KL7 Garage — Ernakulam",
+    phone: "+91 98460 11111",
+    address: "NH 66, Vytilla Junction, Ernakulam, Kerala 682019",
+    openTime: "09:00",
+    closeTime: "19:00",
+  },
+  aluva: {
+    displayName: "KL7 Garage — Aluva",
+    phone: "+91 95440 22222",
+    address: "MG Road, Aluva, Ernakulam, Kerala 683101",
+    openTime: "09:00",
+    closeTime: "19:00",
+  },
+};
+
+function loadSettings(): SettingsData {
+  try {
+    const raw = localStorage.getItem(SETTINGS_KEY);
+    if (!raw) return DEFAULT_SETTINGS;
+    return { ...DEFAULT_SETTINGS, ...JSON.parse(raw) };
+  } catch {
+    return DEFAULT_SETTINGS;
+  }
+}
+
 export default function Settings() {
   const [activeTab, setActiveTab] = useState<TabId>("general");
+  const [settings, setSettings] = useState<SettingsData>(loadSettings);
 
-  const handleSave = () => toast.success("Settings saved");
+  // helpers to update nested fields
+  function setGeneral(field: keyof SettingsData["general"], value: string) {
+    setSettings((s) => ({ ...s, general: { ...s.general, [field]: value } }));
+  }
+  function setShowroom(
+    room: "ernakulam" | "aluva",
+    field: keyof SettingsData["ernakulam"],
+    value: string
+  ) {
+    setSettings((s) => ({ ...s, [room]: { ...s[room], [field]: value } }));
+  }
+
+  function saveGeneral() {
+    try {
+      const current = loadSettings();
+      localStorage.setItem(SETTINGS_KEY, JSON.stringify({ ...current, general: settings.general }));
+      toast.success("General settings saved");
+    } catch {
+      toast.error("Couldn't save — storage unavailable");
+    }
+  }
+
+  function saveShowrooms() {
+    try {
+      const current = loadSettings();
+      localStorage.setItem(
+        SETTINGS_KEY,
+        JSON.stringify({ ...current, ernakulam: settings.ernakulam, aluva: settings.aluva })
+      );
+      toast.success("Showroom settings saved");
+    } catch {
+      toast.error("Couldn't save — storage unavailable");
+    }
+  }
 
   return (
     <div className="space-y-6">
@@ -62,32 +154,50 @@ export default function Settings() {
                   <div className="grid gap-4 sm:grid-cols-2">
                     <div>
                       <Label>Dealership Name</Label>
-                      <Input defaultValue="KL7 Garage" />
+                      <Input
+                        value={settings.general.name}
+                        onChange={(e) => setGeneral("name", e.target.value)}
+                      />
                     </div>
                     <div>
                       <Label>Legal Name</Label>
-                      <Input defaultValue="KL7 Garage Pvt Ltd" />
+                      <Input
+                        value={settings.general.legalName}
+                        onChange={(e) => setGeneral("legalName", e.target.value)}
+                      />
                     </div>
                     <div>
                       <Label>Primary Phone</Label>
-                      <Input defaultValue="+91 98470 11122" />
+                      <Input
+                        value={settings.general.phone}
+                        onChange={(e) => setGeneral("phone", e.target.value)}
+                      />
                     </div>
                     <div>
                       <Label>Email</Label>
-                      <Input defaultValue="contact@kl7garage.in" />
+                      <Input
+                        value={settings.general.email}
+                        onChange={(e) => setGeneral("email", e.target.value)}
+                      />
                     </div>
                     <div className="sm:col-span-2">
                       <Label>Website</Label>
-                      <Input defaultValue="https://kl7garage.in" />
+                      <Input
+                        value={settings.general.website}
+                        onChange={(e) => setGeneral("website", e.target.value)}
+                      />
                     </div>
                     <div className="sm:col-span-2">
                       <Label>GST Number</Label>
-                      <Input defaultValue="32AABCX1234Y1Z1" />
+                      <Input
+                        value={settings.general.gst}
+                        onChange={(e) => setGeneral("gst", e.target.value)}
+                      />
                     </div>
                   </div>
                 </CardContent>
               </Card>
-              <Button variant="accent" onClick={handleSave} className="gap-2">
+              <Button variant="accent" onClick={saveGeneral} className="gap-2">
                 <Save className="h-4 w-4" /> Save General Settings
               </Button>
             </>
@@ -95,140 +205,63 @@ export default function Settings() {
 
           {activeTab === "showrooms" && (
             <>
-              {(["Ernakulam", "Aluva"] as const).map((name) => (
-                <Card key={name}>
-                  <CardHeader>
-                    <CardTitle className="flex items-center gap-2">
-                      <MapPin className="h-4 w-4 text-muted" /> {name} Showroom
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent className="space-y-4">
-                    <div className="grid gap-4 sm:grid-cols-2">
-                      <div>
-                        <Label>Display Name</Label>
-                        <Input defaultValue={`KL7 Garage — ${name}`} />
+              {(["ernakulam", "aluva"] as const).map((room) => {
+                const data = settings[room];
+                const label = room === "ernakulam" ? "Ernakulam" : "Aluva";
+                return (
+                  <Card key={room}>
+                    <CardHeader>
+                      <CardTitle className="flex items-center gap-2">
+                        <MapPin className="h-4 w-4 text-muted" /> {label} Showroom
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                      <div className="grid gap-4 sm:grid-cols-2">
+                        <div>
+                          <Label>Display Name</Label>
+                          <Input
+                            value={data.displayName}
+                            onChange={(e) => setShowroom(room, "displayName", e.target.value)}
+                          />
+                        </div>
+                        <div>
+                          <Label>Phone</Label>
+                          <Input
+                            value={data.phone}
+                            onChange={(e) => setShowroom(room, "phone", e.target.value)}
+                          />
+                        </div>
+                        <div className="sm:col-span-2">
+                          <Label>Address</Label>
+                          <Input
+                            value={data.address}
+                            onChange={(e) => setShowroom(room, "address", e.target.value)}
+                          />
+                        </div>
+                        <div>
+                          <Label>Opening Time</Label>
+                          <Input
+                            type="time"
+                            value={data.openTime}
+                            onChange={(e) => setShowroom(room, "openTime", e.target.value)}
+                          />
+                        </div>
+                        <div>
+                          <Label>Closing Time</Label>
+                          <Input
+                            type="time"
+                            value={data.closeTime}
+                            onChange={(e) => setShowroom(room, "closeTime", e.target.value)}
+                          />
+                        </div>
                       </div>
-                      <div>
-                        <Label>Phone</Label>
-                        <Input defaultValue={name === "Ernakulam" ? "+91 98460 11111" : "+91 95440 22222"} />
-                      </div>
-                      <div className="sm:col-span-2">
-                        <Label>Address</Label>
-                        <Input
-                          defaultValue={
-                            name === "Ernakulam"
-                              ? "NH 66, Vytilla Junction, Ernakulam, Kerala 682019"
-                              : "MG Road, Aluva, Ernakulam, Kerala 683101"
-                          }
-                        />
-                      </div>
-                      <div>
-                        <Label>Opening Time</Label>
-                        <Input type="time" defaultValue="09:00" />
-                      </div>
-                      <div>
-                        <Label>Closing Time</Label>
-                        <Input type="time" defaultValue="19:00" />
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
-              <Button variant="accent" onClick={handleSave} className="gap-2">
+                    </CardContent>
+                  </Card>
+                );
+              })}
+              <Button variant="accent" onClick={saveShowrooms} className="gap-2">
                 <Save className="h-4 w-4" /> Save Showroom Settings
               </Button>
-            </>
-          )}
-
-          {activeTab === "notifications" && (
-            <>
-              <Card>
-                <CardHeader>
-                  <CardTitle>Email Alerts</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  {[
-                    { label: "New lead submitted", desc: "Get notified when a new lead comes in" },
-                    { label: "Lead status change", desc: "When a lead's stage is updated" },
-                    { label: "Insurance expiry", desc: "7 days before a bike's insurance expires" },
-                    { label: "Bike sold", desc: "Confirmation when a bike is marked sold" },
-                    { label: "New staff invite accepted", desc: "When an invited staff member joins" },
-                  ].map(({ label, desc }, i) => (
-                    <div key={label}>
-                      {i > 0 && <Separator />}
-                      <div className={`flex items-center justify-between ${i > 0 ? "pt-4" : ""}`}>
-                        <div>
-                          <div className="text-sm font-medium text-ink">{label}</div>
-                          <div className="text-xs text-muted">{desc}</div>
-                        </div>
-                        <Switch defaultChecked={i < 3} />
-                      </div>
-                    </div>
-                  ))}
-                </CardContent>
-              </Card>
-              <Card>
-                <CardHeader>
-                  <CardTitle>WhatsApp Alerts</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div>
-                    <Label>WhatsApp Number</Label>
-                    <Input defaultValue="+91 98470 11122" />
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <div className="text-sm font-medium text-ink">New lead alerts via WhatsApp</div>
-                      <div className="text-xs text-muted">Get a message for every new lead</div>
-                    </div>
-                    <Switch />
-                  </div>
-                </CardContent>
-              </Card>
-              <Button variant="accent" onClick={handleSave} className="gap-2">
-                <Save className="h-4 w-4" /> Save Notification Settings
-              </Button>
-            </>
-          )}
-
-          {activeTab === "security" && (
-            <>
-              <Card>
-                <CardHeader>
-                  <CardTitle>Password Policy</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  {[
-                    { label: "Require strong passwords", desc: "Min. 8 characters, mix of letters and numbers" },
-                    { label: "Two-factor authentication", desc: "Require OTP via SMS for all staff logins" },
-                    { label: "Session timeout (30 min)", desc: "Auto-logout after inactivity" },
-                  ].map(({ label, desc }, i) => (
-                    <div key={label}>
-                      {i > 0 && <Separator />}
-                      <div className={`flex items-center justify-between ${i > 0 ? "pt-4" : ""}`}>
-                        <div>
-                          <div className="text-sm font-medium text-ink">{label}</div>
-                          <div className="text-xs text-muted">{desc}</div>
-                        </div>
-                        <Switch defaultChecked={i === 2} />
-                      </div>
-                    </div>
-                  ))}
-                </CardContent>
-              </Card>
-              <Card>
-                <CardHeader>
-                  <CardTitle>Danger Zone</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <Button
-                    variant="destructive"
-                    onClick={() => toast.error("Reset cancelled — this is a demo")}
-                  >
-                    Reset all data to demo defaults
-                  </Button>
-                </CardContent>
-              </Card>
             </>
           )}
         </div>

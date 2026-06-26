@@ -7,6 +7,7 @@ import {
 import { cn, initials } from "@/lib/utils";
 import { useAuth } from "@/context/AuthContext";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import kl7Logo from "@/assets/kl7logo.png";
 
 const NAV_ITEMS = [
   { to: "/", label: "Dashboard", icon: LayoutGrid, end: true },
@@ -41,12 +42,11 @@ export function Sidebar({ collapsed, onToggle, mobileOpen, onCloseMobile }: Side
       >
         {/* Brand */}
         <div className={cn("flex items-center gap-3 px-5 py-6", collapsed && "justify-center px-0")}>
-          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-lime font-display text-base font-bold text-lime-ink">
-            K7
-          </div>
-          {!collapsed && (
-            <div className="leading-tight">
-              <div className="font-display text-base font-bold tracking-tight">KL7 GARAGE</div>
+          {collapsed ? (
+            <img src={kl7Logo} alt="KL7 Garage" className="h-10 w-auto object-contain" />
+          ) : (
+            <div className="flex items-center gap-3">
+              <img src={kl7Logo} alt="KL7 Garage" className="h-12 w-auto object-contain" />
               <div className="text-[11px] uppercase tracking-wider text-white/40">Dealer Console</div>
             </div>
           )}

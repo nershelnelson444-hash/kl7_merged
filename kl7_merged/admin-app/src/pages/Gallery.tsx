@@ -23,7 +23,7 @@ export default function Library() {
     <div className="space-y-6">
       <PageHeader
         title="Library"
-        description="Instagram posts and reels from KL7 Garage — powered by Curator.io"
+        description="Instagram posts and reels — powered by Curator.io"
         actions={
           <a
             href="https://curator.io"

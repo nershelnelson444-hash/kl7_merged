@@ -3,6 +3,7 @@ import { motion, useScroll, useTransform, useInView } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import Button from '../components/Button';
 import TeamMemberCard from '../components/TeamMemberCard';
+import aboutHero from '../assets/aboutpage.png';
 import FaqAccordion from '../components/FaqAccordion';
 import CountUp from '../components/CountUp';
 import ScrollReveal from '../components/ScrollReveal';
@@ -226,11 +227,11 @@ export default function AboutUs() {
       <section ref={heroRef} className="relative h-screen min-h-[700px] flex items-end overflow-hidden">
         <motion.div className="absolute inset-0 z-0" style={{ y: heroImageY }}>
           <img
-            src="https://framerusercontent.com/images/ePT9kuMpmdFFmnCqOllNvONQys.webp"
+            src={aboutHero}
             alt="KL7 Garage Showroom"
             className="w-full h-full object-cover scale-110"
           />
-          <div className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-black/10" />
+          <div className="absolute inset-0 bg-gradient-to-t from-black via-black/20 to-black/5" />
         </motion.div>
 
         <motion.div

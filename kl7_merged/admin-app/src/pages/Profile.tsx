@@ -1,238 +1,364 @@
-import { useState } from "react";
-import { Save, MapPin, Bell, Shield, Building2 } from "lucide-react";
+import { useState, useRef, useCallback, useEffect } from "react";
+import { Save, Camera, ZoomIn, ZoomOut, RotateCw, Check, X } from "lucide-react";
 import { PageHeader } from "@/components/common/PageHeader";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Switch } from "@/components/ui/switch";
-import { Separator } from "@/components/ui/separator";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { toast } from "sonner";
-import { cn } from "@/lib/utils";
+import { useAuth } from "@/context/AuthContext";
+import { initials } from "@/lib/utils";
 
-const TABS = [
-  { id: "general", label: "General", icon: Building2 },
-  { id: "showrooms", label: "Showrooms", icon: MapPin },
-  { id: "notifications", label: "Notifications", icon: Bell },
-  { id: "security", label: "Security", icon: Shield },
-] as const;
+const PROFILE_KEY = "kl7_profile_v1";
 
-type TabId = (typeof TABS)[number]["id"];
+interface ProfileData {
+  name: string;
+  email: string;
+  phone: string;
+  role: string;
+}
 
-export default function Settings() {
-  const [activeTab, setActiveTab] = useState<TabId>("general");
+function loadProfile(defaults: ProfileData): ProfileData {
+  try {
+    const raw = localStorage.getItem(PROFILE_KEY);
+    if (!raw) return defaults;
+    return { ...defaults, ...JSON.parse(raw) };
+  } catch {
+    return defaults;
+  }
+}
 
-  const handleSave = () => toast.success("Settings saved");
+// ─── Circular crop canvas ────────────────────────────────────────────────────
+interface CropState {
+  x: number;
+  y: number;
+  scale: number;
+  rotation: number;
+}
+
+function CropModal({
+  src,
+  onDone,
+  onCancel,
+}: {
+  src: string;
+  onDone: (dataUrl: string) => void;
+  onCancel: () => void;
+}) {
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const imgRef = useRef<HTMLImageElement | null>(null);
+  const dragRef = useRef<{ startX: number; startY: number; origX: number; origY: number } | null>(null);
+
+  const SIZE = 280; // canvas size (circle diameter)
+
+  const [crop, setCrop] = useState<CropState>({ x: 0, y: 0, scale: 1, rotation: 0 });
+  const [loaded, setLoaded] = useState(false);
+
+  // Load image
+  useEffect(() => {
+    const img = new Image();
+    img.onload = () => {
+      imgRef.current = img;
+      // auto-fit: scale so the shorter side fills the circle
+      const fit = SIZE / Math.min(img.naturalWidth, img.naturalHeight);
+      setCrop({ x: 0, y: 0, scale: fit, rotation: 0 });
+      setLoaded(true);
+    };
+    img.src = src;
+  }, [src]);
+
+  // Draw every time crop changes
+  useEffect(() => {
+    if (!loaded || !imgRef.current) return;
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
+
+    const img = imgRef.current;
+    ctx.clearRect(0, 0, SIZE, SIZE);
+
+    // clip to circle
+    ctx.save();
+    ctx.beginPath();
+    ctx.arc(SIZE / 2, SIZE / 2, SIZE / 2, 0, Math.PI * 2);
+    ctx.clip();
+
+    // translate/rotate/scale around centre
+    ctx.translate(SIZE / 2 + crop.x, SIZE / 2 + crop.y);
+    ctx.rotate((crop.rotation * Math.PI) / 180);
+    ctx.scale(crop.scale, crop.scale);
+    ctx.drawImage(img, -img.naturalWidth / 2, -img.naturalHeight / 2);
+
+    ctx.restore();
+
+    // draw circular border
+    ctx.beginPath();
+    ctx.arc(SIZE / 2, SIZE / 2, SIZE / 2 - 1, 0, Math.PI * 2);
+    ctx.strokeStyle = "rgba(255,255,255,0.4)";
+    ctx.lineWidth = 2;
+    ctx.stroke();
+  }, [crop, loaded]);
+
+  // Drag handlers
+  function onMouseDown(e: React.MouseEvent) {
+    dragRef.current = { startX: e.clientX, startY: e.clientY, origX: crop.x, origY: crop.y };
+  }
+  function onMouseMove(e: React.MouseEvent) {
+    if (!dragRef.current) return;
+    const dx = e.clientX - dragRef.current.startX;
+    const dy = e.clientY - dragRef.current.startY;
+    setCrop((c) => ({ ...c, x: dragRef.current!.origX + dx, y: dragRef.current!.origY + dy }));
+  }
+  function onMouseUp() { dragRef.current = null; }
+
+  // Touch handlers
+  function onTouchStart(e: React.TouchEvent) {
+    const t = e.touches[0];
+    dragRef.current = { startX: t.clientX, startY: t.clientY, origX: crop.x, origY: crop.y };
+  }
+  function onTouchMove(e: React.TouchEvent) {
+    if (!dragRef.current) return;
+    const t = e.touches[0];
+    const dx = t.clientX - dragRef.current.startX;
+    const dy = t.clientY - dragRef.current.startY;
+    setCrop((c) => ({ ...c, x: dragRef.current!.origX + dx, y: dragRef.current!.origY + dy }));
+  }
+
+  function handleApply() {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    // export as circular PNG
+    const out = document.createElement("canvas");
+    out.width = SIZE;
+    out.height = SIZE;
+    const ctx = out.getContext("2d")!;
+    ctx.drawImage(canvas, 0, 0);
+    onDone(out.toDataURL("image/png"));
+  }
 
   return (
-    <div className="space-y-6">
-      <PageHeader title="Settings" description="Configure your dealership and console preferences" />
+    <Dialog open onOpenChange={onCancel}>
+      <DialogContent className="max-w-sm">
+        <DialogHeader>
+          <DialogTitle>Crop Profile Photo</DialogTitle>
+        </DialogHeader>
 
-      <div className="flex flex-col gap-6 lg:flex-row">
-        {/* Tab nav */}
-        <div className="shrink-0 lg:w-52">
-          <nav className="flex gap-1 lg:flex-col">
-            {TABS.map(({ id, label, icon: Icon }) => (
-              <button
-                key={id}
-                onClick={() => setActiveTab(id)}
-                className={cn(
-                  "flex items-center gap-2.5 rounded-xl px-3 py-2.5 text-sm font-medium transition-colors",
-                  activeTab === id
-                    ? "bg-ink text-white"
-                    : "text-muted hover:bg-canvas-dim hover:text-ink"
-                )}
-              >
-                <Icon className="h-4 w-4 shrink-0" />
-                {label}
-              </button>
-            ))}
-          </nav>
+        <div className="flex flex-col items-center gap-5 py-2">
+          {/* Canvas crop area */}
+          <div
+            className="relative overflow-hidden rounded-full shadow-lg cursor-grab active:cursor-grabbing"
+            style={{ width: SIZE, height: SIZE, background: "#111" }}
+            onMouseDown={onMouseDown}
+            onMouseMove={onMouseMove}
+            onMouseUp={onMouseUp}
+            onMouseLeave={onMouseUp}
+            onTouchStart={onTouchStart}
+            onTouchMove={onTouchMove}
+            onTouchEnd={onMouseUp}
+          >
+            <canvas ref={canvasRef} width={SIZE} height={SIZE} className="block" />
+            {!loaded && (
+              <div className="absolute inset-0 flex items-center justify-center text-white/60 text-sm">
+                Loading…
+              </div>
+            )}
+            {/* guide ring */}
+            <div
+              className="pointer-events-none absolute inset-0 rounded-full"
+              style={{ boxShadow: "inset 0 0 0 2px rgba(255,255,255,0.25)" }}
+            />
+          </div>
+
+          <p className="text-xs text-muted">Drag to reposition · Use slider to zoom</p>
+
+          {/* Zoom */}
+          <div className="flex w-full items-center gap-3">
+            <ZoomOut className="h-4 w-4 shrink-0 text-muted" />
+            <input
+              type="range"
+              min={0.3}
+              max={3}
+              step={0.01}
+              value={crop.scale}
+              onChange={(e) => setCrop((c) => ({ ...c, scale: Number(e.target.value) }))}
+              className="flex-1 accent-lime"
+            />
+            <ZoomIn className="h-4 w-4 shrink-0 text-muted" />
+          </div>
+
+          {/* Rotate */}
+          <Button
+            variant="outline"
+            size="sm"
+            className="gap-2 w-full"
+            onClick={() => setCrop((c) => ({ ...c, rotation: (c.rotation + 90) % 360 }))}
+          >
+            <RotateCw className="h-4 w-4" /> Rotate 90°
+          </Button>
+
+          {/* Actions */}
+          <div className="flex w-full gap-3">
+            <Button variant="outline" className="flex-1 gap-2" onClick={onCancel}>
+              <X className="h-4 w-4" /> Cancel
+            </Button>
+            <Button variant="accent" className="flex-1 gap-2" onClick={handleApply} disabled={!loaded}>
+              <Check className="h-4 w-4" /> Apply
+            </Button>
+          </div>
         </div>
+      </DialogContent>
+    </Dialog>
+  );
+}
 
-        {/* Tab content */}
-        <div className="min-w-0 flex-1 space-y-4">
-          {activeTab === "general" && (
-            <>
-              <Card>
-                <CardHeader>
-                  <CardTitle>Dealership Info</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="grid gap-4 sm:grid-cols-2">
-                    <div>
-                      <Label>Dealership Name</Label>
-                      <Input defaultValue="KL7 Garage" />
-                    </div>
-                    <div>
-                      <Label>Legal Name</Label>
-                      <Input defaultValue="KL7 Garage Pvt Ltd" />
-                    </div>
-                    <div>
-                      <Label>Primary Phone</Label>
-                      <Input defaultValue="+91 98470 11122" />
-                    </div>
-                    <div>
-                      <Label>Email</Label>
-                      <Input defaultValue="contact@kl7garage.in" />
-                    </div>
-                    <div className="sm:col-span-2">
-                      <Label>Website</Label>
-                      <Input defaultValue="https://kl7garage.in" />
-                    </div>
-                    <div className="sm:col-span-2">
-                      <Label>GST Number</Label>
-                      <Input defaultValue="32AABCX1234Y1Z1" />
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-              <Button variant="accent" onClick={handleSave} className="gap-2">
-                <Save className="h-4 w-4" /> Save General Settings
-              </Button>
-            </>
-          )}
+// ─── Main Profile page ────────────────────────────────────────────────────────
+export default function Profile() {
+  const { user, updateUser } = useAuth();
 
-          {activeTab === "showrooms" && (
-            <>
-              {(["Ernakulam", "Aluva"] as const).map((name) => (
-                <Card key={name}>
-                  <CardHeader>
-                    <CardTitle className="flex items-center gap-2">
-                      <MapPin className="h-4 w-4 text-muted" /> {name} Showroom
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent className="space-y-4">
-                    <div className="grid gap-4 sm:grid-cols-2">
-                      <div>
-                        <Label>Display Name</Label>
-                        <Input defaultValue={`KL7 Garage — ${name}`} />
-                      </div>
-                      <div>
-                        <Label>Phone</Label>
-                        <Input defaultValue={name === "Ernakulam" ? "+91 98460 11111" : "+91 95440 22222"} />
-                      </div>
-                      <div className="sm:col-span-2">
-                        <Label>Address</Label>
-                        <Input
-                          defaultValue={
-                            name === "Ernakulam"
-                              ? "NH 66, Vytilla Junction, Ernakulam, Kerala 682019"
-                              : "MG Road, Aluva, Ernakulam, Kerala 683101"
-                          }
-                        />
-                      </div>
-                      <div>
-                        <Label>Opening Time</Label>
-                        <Input type="time" defaultValue="09:00" />
-                      </div>
-                      <div>
-                        <Label>Closing Time</Label>
-                        <Input type="time" defaultValue="19:00" />
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
-              <Button variant="accent" onClick={handleSave} className="gap-2">
-                <Save className="h-4 w-4" /> Save Showroom Settings
-              </Button>
-            </>
-          )}
+  const defaults: ProfileData = {
+    name: user?.name ?? "Admin User",
+    email: user?.email ?? "admin@kl7garage.in",
+    phone: "+91 98470 11122",
+    role: user?.role ?? "Owner",
+  };
 
-          {activeTab === "notifications" && (
-            <>
-              <Card>
-                <CardHeader>
-                  <CardTitle>Email Alerts</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  {[
-                    { label: "New lead submitted", desc: "Get notified when a new lead comes in" },
-                    { label: "Lead status change", desc: "When a lead's stage is updated" },
-                    { label: "Insurance expiry", desc: "7 days before a bike's insurance expires" },
-                    { label: "Bike sold", desc: "Confirmation when a bike is marked sold" },
-                    { label: "New staff invite accepted", desc: "When an invited staff member joins" },
-                  ].map(({ label, desc }, i) => (
-                    <div key={label}>
-                      {i > 0 && <Separator />}
-                      <div className={`flex items-center justify-between ${i > 0 ? "pt-4" : ""}`}>
-                        <div>
-                          <div className="text-sm font-medium text-ink">{label}</div>
-                          <div className="text-xs text-muted">{desc}</div>
-                        </div>
-                        <Switch defaultChecked={i < 3} />
-                      </div>
-                    </div>
-                  ))}
-                </CardContent>
-              </Card>
-              <Card>
-                <CardHeader>
-                  <CardTitle>WhatsApp Alerts</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
+  const [profile, setProfile] = useState<ProfileData>(() => loadProfile(defaults));
+  const [cropSrc, setCropSrc] = useState<string | null>(null);
+  const [avatar, setAvatar] = useState<string | undefined>(user?.avatar);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+
+
+  function setField(field: keyof ProfileData, value: string) {
+    setProfile((p) => ({ ...p, [field]: value }));
+  }
+
+  function saveProfile() {
+    try {
+      localStorage.setItem(PROFILE_KEY, JSON.stringify(profile));
+      // update the auth user so topbar name + avatar reflect immediately
+      updateUser({ name: profile.name, email: profile.email, avatar });
+      toast.success("Profile updated");
+    } catch {
+      toast.error("Couldn't save — storage unavailable");
+    }
+  }
+
+  function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (ev) => {
+      if (ev.target?.result) setCropSrc(ev.target.result as string);
+    };
+    reader.readAsDataURL(file);
+    // reset input so same file can be re-selected
+    e.target.value = "";
+  }
+
+  function handleCropDone(dataUrl: string) {
+    setAvatar(dataUrl);
+    setCropSrc(null);
+    // immediately persist avatar to auth user
+    updateUser({ avatar: dataUrl });
+    toast.success("Profile photo updated");
+  }
+
+  return (
+    <>
+      {cropSrc && (
+        <CropModal
+          src={cropSrc}
+          onDone={handleCropDone}
+          onCancel={() => setCropSrc(null)}
+        />
+      )}
+
+      <div className="space-y-6">
+        <PageHeader title="Profile" description="Manage your personal account details" />
+
+        <div className="grid gap-6 lg:grid-cols-[auto_1fr]">
+          {/* Avatar card */}
+          <Card className="flex flex-col items-center gap-4 p-6 lg:w-56">
+            <div className="relative">
+              <Avatar className="h-24 w-24 border-2 border-line text-2xl">
+                <AvatarImage src={avatar} alt={profile.name} />
+                <AvatarFallback className="text-xl font-semibold">
+                  {initials(profile.name)}
+                </AvatarFallback>
+              </Avatar>
+              <button
+                onClick={() => fileInputRef.current?.click()}
+                className="absolute bottom-0 right-0 flex h-8 w-8 items-center justify-center rounded-full bg-ink text-white shadow-md transition-colors hover:bg-ink/80"
+                title="Upload photo"
+              >
+                <Camera className="h-4 w-4" />
+              </button>
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/*"
+                className="hidden"
+                onChange={handleFileChange}
+              />
+            </div>
+            <div className="text-center">
+              <div className="font-semibold text-ink">{profile.name}</div>
+              <div className="text-xs text-muted">{profile.role}</div>
+            </div>
+          </Card>
+
+          {/* Info + password */}
+          <div className="space-y-4">
+            <Card>
+              <CardHeader>
+                <CardTitle>Personal Info</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="grid gap-4 sm:grid-cols-2">
                   <div>
-                    <Label>WhatsApp Number</Label>
-                    <Input defaultValue="+91 98470 11122" />
+                    <Label>Full Name</Label>
+                    <Input
+                      value={profile.name}
+                      onChange={(e) => setField("name", e.target.value)}
+                    />
                   </div>
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <div className="text-sm font-medium text-ink">New lead alerts via WhatsApp</div>
-                      <div className="text-xs text-muted">Get a message for every new lead</div>
-                    </div>
-                    <Switch />
+                  <div>
+                    <Label>Role</Label>
+                    <Input
+                      value={profile.role}
+                      onChange={(e) => setField("role", e.target.value)}
+                    />
                   </div>
-                </CardContent>
-              </Card>
-              <Button variant="accent" onClick={handleSave} className="gap-2">
-                <Save className="h-4 w-4" /> Save Notification Settings
-              </Button>
-            </>
-          )}
+                  <div>
+                    <Label>Email</Label>
+                    <Input
+                      type="email"
+                      value={profile.email}
+                      onChange={(e) => setField("email", e.target.value)}
+                    />
+                  </div>
+                  <div>
+                    <Label>Phone</Label>
+                    <Input
+                      value={profile.phone}
+                      onChange={(e) => setField("phone", e.target.value)}
+                    />
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
 
-          {activeTab === "security" && (
-            <>
-              <Card>
-                <CardHeader>
-                  <CardTitle>Password Policy</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  {[
-                    { label: "Require strong passwords", desc: "Min. 8 characters, mix of letters and numbers" },
-                    { label: "Two-factor authentication", desc: "Require OTP via SMS for all staff logins" },
-                    { label: "Session timeout (30 min)", desc: "Auto-logout after inactivity" },
-                  ].map(({ label, desc }, i) => (
-                    <div key={label}>
-                      {i > 0 && <Separator />}
-                      <div className={`flex items-center justify-between ${i > 0 ? "pt-4" : ""}`}>
-                        <div>
-                          <div className="text-sm font-medium text-ink">{label}</div>
-                          <div className="text-xs text-muted">{desc}</div>
-                        </div>
-                        <Switch defaultChecked={i === 2} />
-                      </div>
-                    </div>
-                  ))}
-                </CardContent>
-              </Card>
-              <Card>
-                <CardHeader>
-                  <CardTitle>Danger Zone</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <Button
-                    variant="destructive"
-                    onClick={() => toast.error("Reset cancelled — this is a demo")}
-                  >
-                    Reset all data to demo defaults
-                  </Button>
-                </CardContent>
-              </Card>
-            </>
-          )}
+            <Button variant="accent" onClick={saveProfile} className="gap-2">
+              <Save className="h-4 w-4" /> Save Profile
+            </Button>
+
+          </div>
         </div>
       </div>
-    </div>
+    </>
   );
 }
