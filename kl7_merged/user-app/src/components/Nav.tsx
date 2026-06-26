@@ -138,11 +138,11 @@ export default function Nav() {
 
           {/* Right Actions */}
           <div className="flex flex-row items-center gap-3">
-            <Button asLink to="/contact" variant="primary" className="hidden md:flex">
-              Get in Touch
-            </Button>
-            {/* Desktop auth */}
-            <div className="hidden md:flex">
+            {/* Desktop only: Get in Touch + auth */}
+            <div className="hidden lg:flex flex-row items-center gap-3">
+              <Button asLink to="/contact" variant="primary">
+                Get in Touch
+              </Button>
               {authButtonJSX}
             </div>
 

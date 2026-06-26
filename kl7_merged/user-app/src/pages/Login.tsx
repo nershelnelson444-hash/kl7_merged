@@ -126,12 +126,11 @@ export const SignInPage: React.FC<SignInPageProps> = ({
                 </GlassInputWrapper>
               </div>
 
-              <div className="flex items-center justify-between text-sm">
+              <div className="flex items-center text-sm">
                 <label className="flex items-center gap-3 cursor-pointer">
                   <input type="checkbox" name="rememberMe" className="w-4 h-4 rounded border-gray-300 text-black focus:ring-black" />
                   <span className="text-gray-700">Keep me signed in</span>
                 </label>
-                <a href="#" onClick={(e) => { e.preventDefault(); onResetPassword?.(); }} className="hover:underline text-black transition-colors font-medium">Reset password</a>
               </div>
 
               {error && (
@@ -153,11 +152,7 @@ export const SignInPage: React.FC<SignInPageProps> = ({
                 Continue with Google
             </button>
 
-            <p className="text-center text-sm text-gray-500">
-              New to our platform? <a href="#" onClick={(e) => { e.preventDefault(); onCreateAccount?.(); }} className="text-black font-medium hover:underline transition-colors">Create Account</a>
-            </p>
-
-              <div className="mt-8 text-center">
+              <div className="text-center">
                 <a href={`${adminUrl}/login`} className="text-sm font-medium text-gray-500 hover:text-black transition-colors underline underline-offset-4">
                   Login as Admin
                 </a>
