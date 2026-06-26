@@ -1,4 +1,4 @@
-import React, { useRef } from 'react';
+import React, { useRef, useEffect } from 'react';
 import { motion, useScroll, useTransform, useInView } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import Button from '../components/Button';
@@ -220,6 +220,44 @@ export default function AboutUs() {
   const heroImageY = useTransform(heroScroll, [0, 1], ['0%', '20%']);
   const heroOpacity = useTransform(heroScroll, [0, 0.7], [1, 0]);
 
+  // Load Curator.io Instagram feed — newest post first, auto-refresh every 5 min
+  useEffect(() => {
+    // Inject global Curator config BEFORE the script so it picks it up on init
+    if (!(window as any).CuratorOptions) {
+      (window as any).CuratorOptions = {
+        feedId: '0ef26f4a-caa5-4b93-9ee9-f6bb34eaf5e1',
+        sortBy: 'published_at',
+        sortOrder: 'desc',
+        postsPerPage: 16,
+      };
+    }
+
+    const loadScript = () => {
+      if (document.getElementById('curator-script')) return;
+      const script = document.createElement('script');
+      script.id = 'curator-script';
+      script.async = true;
+      script.charset = 'UTF-8';
+      script.src = 'https://cdn.curator.io/published/0ef26f4a-caa5-4b93-9ee9-f6bb34eaf5e1.js';
+      document.body.appendChild(script);
+    };
+
+    loadScript();
+
+    // Auto-refresh: reload the feed every 5 minutes
+    const refreshInterval = setInterval(() => {
+      const existing = document.getElementById('curator-script');
+      if (existing) existing.remove();
+      setTimeout(loadScript, 500);
+    }, 5 * 60 * 1000);
+
+    return () => {
+      clearInterval(refreshInterval);
+      const existing = document.getElementById('curator-script');
+      if (existing) existing.remove();
+    };
+  }, []);
+
   return (
     <div className="flex flex-col font-sans overflow-x-hidden bg-[#F2F2F2]">
 
@@ -385,14 +423,233 @@ export default function AboutUs() {
           </div>
         </ScrollReveal>
 
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-3" style={{ gridAutoRows: '200px' }}>
-          <GalleryItem tall src="https://framerusercontent.com/images/WyhRtolqAtg9ZPTE92NjlKjv0.webp" label="Showroom" />
-          <GalleryItem src="https://framerusercontent.com/images/ePT9kuMpmdFFmnCqOllNvONQys.webp" label="Deliveries" />
-          <GalleryItem src="https://framerusercontent.com/images/TcgsebcRv5iSa7dvNbl6PMQECA.webp" label="Events" />
-          <GalleryItem tall src="https://framerusercontent.com/images/DKYMPBTwzZsENhq8F0kqQLKshtw.jpg" label="Customers" />
-          <GalleryItem src="https://framerusercontent.com/images/ePT9kuMpmdFFmnCqOllNvONQys.webp" label="Track Days" />
-          <GalleryItem src="https://framerusercontent.com/images/WyhRtolqAtg9ZPTE92NjlKjv0.webp" label="Collection" />
+        {/* Skeleton placeholders – visible before Curator loads */}
+        <div id="kl7-gallery-skeleton" className="kl7-gallery-grid" aria-hidden="true">
+          {Array.from({ length: 8 }).map((_, i) => (
+            <div key={i} className="kl7-gallery-skeleton" />
+          ))}
         </div>
+
+        {/* Curator.io Instagram Feed container */}
+        <div
+          id="curator-feed-default-feed-layout"
+          className="w-full"
+          style={{ display: 'none' } as React.CSSProperties}
+        >
+          <a
+            href="https://curator.io"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="crt-logo crt-tag"
+          >
+            Powered by Curator.io
+          </a>
+        </div>
+
+        {/* ── Premium Gallery Styles ───────────────────────────────────── */}
+        <style>{`
+          /* ── Grid layout ─────────────────────────────────────────────── */
+          .kl7-gallery-grid,
+          #curator-feed-default-feed-layout .crt-feed {
+            display: grid !important;
+            grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+            gap: 20px !important;
+            padding: 0 !important;
+            margin: 0 !important;
+            list-style: none !important;
+          }
+
+          @media (max-width: 1024px) {
+            .kl7-gallery-grid,
+            #curator-feed-default-feed-layout .crt-feed {
+              grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+            }
+          }
+
+          @media (max-width: 640px) {
+            .kl7-gallery-grid,
+            #curator-feed-default-feed-layout .crt-feed {
+              grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+              gap: 12px !important;
+            }
+          }
+
+          /* ── Skeleton loader ─────────────────────────────────────────── */
+          .kl7-gallery-skeleton {
+            aspect-ratio: 4 / 5;
+            border-radius: 16px;
+            background: linear-gradient(90deg, #e8e8e8 25%, #d0d0d0 50%, #e8e8e8 75%);
+            background-size: 200% 100%;
+            animation: kl7-shimmer 1.5s infinite;
+            will-change: background-position;
+          }
+
+          @keyframes kl7-shimmer {
+            0%   { background-position: 200% 0; }
+            100% { background-position: -200% 0; }
+          }
+
+          /* ── Each post card ──────────────────────────────────────────── */
+          #curator-feed-default-feed-layout .crt-post {
+            aspect-ratio: 4 / 5 !important;
+            overflow: hidden !important;
+            border-radius: 16px !important;
+            position: relative !important;
+            cursor: pointer !important;
+            background: #111 !important;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.08) !important;
+            transform: translateZ(0);                   /* GPU layer */
+            transition: box-shadow 0.35s ease, transform 0.35s ease !important;
+            will-change: transform;
+          }
+
+          #curator-feed-default-feed-layout .crt-post:hover {
+            box-shadow: 0 12px 40px rgba(0,0,0,0.18) !important;
+            transform: translateY(-3px) translateZ(0) !important;
+          }
+
+          /* ── Post content wrapper fills the card ─────────────────────── */
+          #curator-feed-default-feed-layout .crt-post-content,
+          #curator-feed-default-feed-layout .crt-post-content-text-wrap,
+          #curator-feed-default-feed-layout a.crt-post-link {
+            display: block !important;
+            width: 100% !important;
+            height: 100% !important;
+            position: absolute !important;
+            inset: 0 !important;
+          }
+
+          /* ── Image: cover the card, zoom on hover ────────────────────── */
+          #curator-feed-default-feed-layout .crt-post img {
+            width: 100% !important;
+            height: 100% !important;
+            object-fit: cover !important;
+            object-position: center !important;
+            display: block !important;
+            transition: transform 0.55s cubic-bezier(0.25, 0.46, 0.45, 0.94) !important;
+            will-change: transform;
+            content-visibility: auto;                  /* lazy render */
+          }
+
+          #curator-feed-default-feed-layout .crt-post:hover img {
+            transform: scale(1.05) !important;
+          }
+
+          /* ── Dark overlay on hover ───────────────────────────────────── */
+          #curator-feed-default-feed-layout .crt-post::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(
+              to top,
+              rgba(0,0,0,0.72) 0%,
+              rgba(0,0,0,0.18) 50%,
+              transparent 100%
+            );
+            opacity: 0;
+            transition: opacity 0.35s ease;
+            border-radius: 16px;
+            pointer-events: none;
+            z-index: 2;
+          }
+
+          #curator-feed-default-feed-layout .crt-post:hover::after {
+            opacity: 1;
+          }
+
+          /* ── Caption: slide up on hover ──────────────────────────────── */
+          #curator-feed-default-feed-layout .crt-post-text {
+            display: block !important;          /* override the hide rule below */
+            position: absolute !important;
+            bottom: 16px !important;
+            left: 16px !important;
+            right: 16px !important;
+            z-index: 3 !important;
+            color: #fff !important;
+            font-size: 12px !important;
+            font-weight: 600 !important;
+            line-height: 1.4 !important;
+            letter-spacing: 0.01em !important;
+            opacity: 0 !important;
+            transform: translateY(6px) !important;
+            transition: opacity 0.35s ease, transform 0.35s ease !important;
+            pointer-events: none !important;
+            /* clamp to 3 lines */
+            display: -webkit-box !important;
+            -webkit-line-clamp: 3 !important;
+            -webkit-box-orient: vertical !important;
+            overflow: hidden !important;
+          }
+
+          #curator-feed-default-feed-layout .crt-post:hover .crt-post-text {
+            opacity: 1 !important;
+            transform: translateY(0) !important;
+          }
+
+          /* ── Hide everything except image + caption ───────────────────── */
+          #curator-feed-default-feed-layout .crt-post-header,
+          #curator-feed-default-feed-layout .crt-post-footer,
+          #curator-feed-default-feed-layout .crt-post-username,
+          #curator-feed-default-feed-layout .crt-post-fullname,
+          #curator-feed-default-feed-layout .crt-post-timestamp,
+          #curator-feed-default-feed-layout .crt-post-likes,
+          #curator-feed-default-feed-layout .crt-post-comments,
+          #curator-feed-default-feed-layout .crt-post-stats,
+          #curator-feed-default-feed-layout .crt-post-share,
+          #curator-feed-default-feed-layout .crt-social-icon,
+          #curator-feed-default-feed-layout .crt-logo,
+          #curator-feed-default-feed-layout .crt-load-more,
+          #curator-feed-default-feed-layout .crt-post-watermark {
+            display: none !important;
+          }
+
+          /* ── Limit to 16 posts (4×4) ─────────────────────────────────── */
+          #curator-feed-default-feed-layout .crt-post:nth-child(n+17) {
+            display: none !important;
+          }
+
+          /* ── Prevent layout shift while loading ──────────────────────── */
+          #curator-feed-default-feed-layout {
+            contain: layout style;
+          }
+        `}</style>
+
+        {/* Script to swap skeleton → real feed once Curator renders */}
+        <script dangerouslySetInnerHTML={{ __html: `
+          (function () {
+            var CHECK_INTERVAL = 300;   // ms between checks
+            var MAX_WAIT = 15000;        // give up after 15 s
+            var elapsed = 0;
+
+            function ready() {
+              var feed = document.querySelector(
+                '#curator-feed-default-feed-layout .crt-feed'
+              );
+              // Wait until at least 4 posts with images are injected
+              if (!feed) return false;
+              var posts = feed.querySelectorAll('.crt-post img[src]');
+              return posts.length >= 4;
+            }
+
+            var timer = setInterval(function () {
+              elapsed += CHECK_INTERVAL;
+              if (ready() || elapsed >= MAX_WAIT) {
+                clearInterval(timer);
+                // Hide skeleton, show real feed
+                var skeleton = document.getElementById('kl7-gallery-skeleton');
+                var container = document.getElementById('curator-feed-default-feed-layout');
+                if (skeleton)   skeleton.style.display = 'none';
+                if (container)  container.style.display = 'block';
+
+                // Lazy-load images that curator didn't lazy-load itself
+                if ('IntersectionObserver' in window) {
+                  var imgs = container ? container.querySelectorAll('img:not([loading])') : [];
+                  imgs.forEach(function(img) { img.loading = 'lazy'; });
+                }
+              }
+            }, CHECK_INTERVAL);
+          })();
+        ` }} />
       </section>
 
       <Divider />
