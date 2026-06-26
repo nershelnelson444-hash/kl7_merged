@@ -89,9 +89,14 @@ export default function Contact() {
                   <div className="flex flex-col gap-2">
                     <h3 className="text-[24px] font-bold tracking-[-0.03em]">Showroom</h3>
                     <p className="text-[18px] text-text-black-muted">
-                      No. 12, Jalan Kiara 3<br />
-                      Mont Kiara, 50480 Kuala Lumpur<br />
-                      Malaysia
+                      Edappally Branch<br />
+                      Road, Edappally Toll, Marottichuvadu, Edappally,<br />
+                      Kochi, Kerala 682024
+                    </p>
+                    <p className="text-[18px] text-text-black-muted">
+                      Thrikkakara Branch<br />
+                      Pipeline Road, Thrikkakara, Thoppil,<br />
+                      Kochi, Kerala 682021
                     </p>
                   </div>
                 </StaggerItem>
@@ -100,9 +105,7 @@ export default function Contact() {
                   <div className="flex flex-col gap-2">
                     <h3 className="text-[24px] font-bold tracking-[-0.03em]">Contact</h3>
                     <p className="text-[18px] text-text-black-muted">
-                      Sales: +60 12-345 6789<br />
-                      Service: +60 12-345 6788<br />
-                      Email: hello@kl7garage.com
+                      Phone: +91 95673 88188<br />
                     </p>
                   </div>
                 </StaggerItem>
@@ -111,9 +114,14 @@ export default function Contact() {
                   <div className="flex flex-col gap-2">
                     <h3 className="text-[24px] font-bold tracking-[-0.03em]">Hours</h3>
                     <p className="text-[18px] text-text-black-muted">
-                      Monday – Friday: 9:00 AM – 7:00 PM<br />
-                      Saturday: 10:00 AM – 5:00 PM<br />
-                      Sunday: Closed
+                      Edappally Branch <br />
+                      Monday - Saturday: 10:00 AM - 7:30 PM <br />
+                      Sunday: 10:30 AM - 5:00 PM <br />
+                      </p>
+                    <p className="text-[18px] text-text-black-muted">
+                      Thrikkakara Branch <br />
+                      Monday - Saturday: 10:00 AM - 7:30 PM <br />
+                      Sunday: 10:30 AM - 5:00 PM <br />
                     </p>
                   </div>
                 </StaggerItem>
@@ -182,7 +190,7 @@ export default function Contact() {
                       value={formData.phone_number}
                       onChange={handleChange}
                       className="w-full bg-background-mid border border-grey-main rounded-xl px-4 py-4 outline-none focus:border-black-main transition-colors font-medium text-text-black"
-                      placeholder="+60 12-000 0000"
+                      placeholder="+91 00000 00000"
                     />
                   </div>
 

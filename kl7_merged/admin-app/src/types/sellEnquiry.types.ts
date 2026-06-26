@@ -1,11 +1,13 @@
 // ─── Status (not a DB column — managed in app state via a separate status column)
 // If you later add a status column to the table, this stays the same.
-export type SellEnquiryStatus =
-  | "new"
-  | "contacted"
-  | "appraised"
-  | "deal_closed"
-  | "declined";
+import type {
+  SellEnquiry as CanonicalSellEnquiry,
+  SellBikeType,
+  SellCondition,
+  PreferredContact,
+} from "./index";
+
+export type SellEnquiryStatus = CanonicalSellEnquiry["status"];
 
 // ─── Raw row from Supabase (snake_case, matches bike_valuation_requests exactly)
 export interface SellEnquiryRow {
@@ -25,6 +27,7 @@ export interface SellEnquiryRow {
   preferred_contact: string;
   status: SellEnquiryStatus;   // add this column — see note below
   created_at: string;
+  updated_at?: string;
 }
 
 // ─── Normalised shape used throughout the UI (camelCase)
@@ -35,16 +38,17 @@ export interface SellEnquiry {
   year: number;
   mileage: number;
   engineCC: number;
-  bikeType: string;
-  condition: string;
+  bikeType: SellBikeType;
+  condition: SellCondition;
   askingPrice: number;
   notes?: string | null;
   fullName: string;
   phone: string;
   email: string;
-  preferredContact: string;
+  preferredContact: PreferredContact;
   status: SellEnquiryStatus;
   createdAt: string;
+  updatedAt: string;
 }
 
 // ─── Mapper: DB row → UI shape
@@ -56,15 +60,16 @@ export function mapSellEnquiry(row: SellEnquiryRow): SellEnquiry {
     year: row.year,
     mileage: row.mileage_km,
     engineCC: row.engine_cc,
-    bikeType: row.bike_type,
-    condition: row.condition,
+    bikeType: row.bike_type as SellEnquiry["bikeType"],
+    condition: row.condition as SellEnquiry["condition"],
     askingPrice: row.asking_price_rm,
     notes: row.additional_notes,
     fullName: row.full_name,
     phone: row.phone_number,
     email: row.email_address,
-    preferredContact: row.preferred_contact,
+    preferredContact: row.preferred_contact as SellEnquiry["preferredContact"],
     status: row.status ?? "new",
     createdAt: row.created_at,
+    updatedAt: row.updated_at ?? row.created_at,
   };
 }

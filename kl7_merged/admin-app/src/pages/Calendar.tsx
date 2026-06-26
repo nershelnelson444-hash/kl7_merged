@@ -15,7 +15,9 @@ import { Badge } from "@/components/ui/badge";
 import { useCalendarTasks, useCreateCalendarTask, useDeleteCalendarTask } from "@/hooks/useCalendar";
 import { useCustomerEnquiries } from "@/hooks/useCustomerEnquiry";
 import { useSellEnquiries } from "@/hooks/useSellEnquiry";
-import type { CalendarTask, CustomerEnquiry, SellEnquiry } from "@/types";
+import type { CalendarTask } from "@/types";
+import type { CustomerEnquiry } from "@/types/customerEnquiry.types";
+import type { SellEnquiry } from "@/types/sellEnquiry.types";
 import { cn } from "@/lib/utils";
 
 const DAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];

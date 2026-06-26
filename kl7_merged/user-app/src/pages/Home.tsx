@@ -1,15 +1,14 @@
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
-import { getFeaturedInventory, getFeaturedBlog } from '../data/cms';
+import { Link, useNavigate } from 'react-router-dom';
+import { getFeaturedInventory } from '../data/cms';
 import CarsCard from '../components/CarsCard';
 import TestimonialCard from '../components/TestimonialCard';
 import CountUp from '../components/CountUp';
 import TeamMemberCard from '../components/TeamMemberCard';
-import BlogCard from '../components/BlogCard';
 import FaqAccordion from '../components/FaqAccordion';
 import FadeIn from '../components/FadeIn';
 import StaggerContainer, { StaggerItem } from '../components/StaggerContainer';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import Button from '../components/Button';
 import heroImage from '../assets/hero.png';
 
@@ -46,12 +45,22 @@ const faqItems = [
   { question: "Can I trade in my current bike?", answer: "Absolutely. We accept trade-ins on all makes and models. Bring your bike in for a free, no-obligation appraisal, and we'll apply its value directly toward your next purchase." },
   { question: "Do your used bikes come with a warranty?", answer: "All bikes in our inventory go through a rigorous multi-point inspection and come with a limited warranty. Extended protection plans are also available for added peace of mind." },
   { question: "How do I schedule a viewing?", answer: "You can book a viewing directly on our website or call our showroom. We're open 7 days a week and happy to accommodate same-day appointments." },
-  { question: "Do you offer delivery?", answer: "Yes. We offer delivery within the Klang Valley. Once your paperwork is finalised, we'll coordinate a convenient time to bring your bike directly to you." },
+  { question: "Do you offer delivery?", answer: "Yes. We offer delivery within the Kochi area. Once your paperwork is finalised, we'll coordinate a convenient time to bring your bike directly to you." },
 ];
 
 export default function Home() {
   const featuredBikes = getFeaturedInventory().slice(0, 6);
-  const featuredPosts = getFeaturedBlog().slice(0, 3);
+  const navigate = useNavigate();
+  const [heroSearch, setHeroSearch] = useState('');
+
+  const handleHeroSearch = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (heroSearch.trim()) {
+      navigate(`/inventory?q=${encodeURIComponent(heroSearch.trim())}`);
+    } else {
+      navigate('/inventory');
+    }
+  };
 
   return (
     <div className="w-full flex flex-col bg-white">
@@ -70,7 +79,7 @@ export default function Home() {
             <div className="flex flex-col justify-between h-full max-w-3xl py-8 gap-8">
               <FadeIn direction="up" delay={0.2}>
                 <h1 className="text-text-white font-bold text-[56px] leading-tight tracking-[-0.03em]">
-                  Kuala Lumpur's Premier Bike Showroom
+                  Kochi's Premier Bike Showroom
                 </h1>
               </FadeIn>
               <FadeIn direction="up" delay={0.4} className="mt-auto">
@@ -84,9 +93,15 @@ export default function Home() {
             </div>
             <div className="flex flex-col justify-between items-end h-full py-8">
               <FadeIn direction="left" delay={0.4}>
-                <div className="hero-search-container bg-white/10 backdrop-blur-md px-4 py-2 border border-white/20 text-white w-[206px]">
-                  <input type="text" placeholder="Search bikes..." className="hero-search-bar bg-transparent outline-none text-white placeholder-white/70" />
-                </div>
+                <form onSubmit={handleHeroSearch} className="hero-search-container bg-white/10 backdrop-blur-md px-4 py-2 border border-white/20 text-white w-[206px]">
+                  <input
+                    type="text"
+                    placeholder="Search bikes..."
+                    className="hero-search-bar bg-transparent outline-none text-white placeholder-white/70"
+                    value={heroSearch}
+                    onChange={(e) => setHeroSearch(e.target.value)}
+                  />
+                </form>
               </FadeIn>
               <StaggerContainer delayChildren={0.6} staggerChildren={0.2} className="flex flex-col gap-4 mt-auto items-end">
                 <StaggerItem>
@@ -137,7 +152,7 @@ export default function Home() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.65, delay: 0.32, ease: [0.22, 1, 0.36, 1] }}
             >
-              KL's Premier Bike Showroom
+              Kochi's Premier Bike Showroom
             </motion.h1>
 
             <motion.p
@@ -164,7 +179,7 @@ export default function Home() {
                 <span className="mobile-hero-stat-label">Sales Value</span>
               </div>
               <div className="mobile-hero-stat">
-                <span className="mobile-hero-stat-num">5.0★</span>
+                <span className="mobile-hero-stat-num">4.8★</span>
                 <span className="mobile-hero-stat-label">Google Rating</span>
               </div>
             </motion.div>
@@ -280,7 +295,7 @@ export default function Home() {
 
       {/* ── Desktop ── */}
       <section className="desktop-only w-full bg-background-main py-20 flex flex-col items-center">
-        <div className="max-w-[1480px] w-full px-8 flex flex-col gap-20">
+        <div className="max-w-[1480px] w-full px-8 flex flex-col gap-12">
           <FadeIn direction="up">
             <div className="flex flex-row justify-between items-start w-full">
               <div className="flex flex-col gap-4 max-w-[550px]">
@@ -295,55 +310,80 @@ export default function Home() {
               </div>
             </div>
           </FadeIn>
-          <StaggerContainer delayChildren={0.2} staggerChildren={0.15} className="flex flex-col lg:flex-row gap-6 h-[800px]">
-            <div className="flex flex-col gap-6 w-full lg:w-1/2 h-full">
-              <StaggerItem className="w-full h-1/2">
-                <div className="w-full h-full relative rounded-[12px] overflow-hidden p-5 flex flex-col justify-end group cursor-pointer">
-                  <div className="absolute inset-0 z-0">
-                    <img src="https://framerusercontent.com/images/ePT9kuMpmdFFmnCqOllNvONQys.webp" alt="Inspection" className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" />
-                    <div className="absolute inset-0 bg-black-50 transition-opacity duration-300" />
-                  </div>
-                  <h3 className="text-white font-medium text-2xl z-10 transition-transform duration-300 group-hover:-translate-y-1">Full Technical Inspection</h3>
+          
+          <StaggerContainer delayChildren={0.2} staggerChildren={0.15} className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <StaggerItem className="w-full lg:col-span-2">
+              <div className="w-full h-[300px] relative rounded-[24px] overflow-hidden p-8 flex flex-col justify-end group cursor-pointer border border-white/10 shadow-sm bg-black-main">
+                <div className="absolute inset-0 z-0">
+                  <img src="https://framerusercontent.com/images/DKYMPBTwzZsENhq8F0kqQLKshtw.jpg" alt="Financing" className="w-full h-full object-cover opacity-60 transition-transform duration-700 group-hover:scale-105" />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent" />
                 </div>
-              </StaggerItem>
-              <StaggerItem className="w-full h-1/2">
-                <div className="w-full h-full relative rounded-[16px] overflow-hidden p-5 flex flex-col justify-end group cursor-pointer">
-                  <div className="absolute inset-0 z-0">
-                    <img src="https://framerusercontent.com/images/WyhRtolqAtg9ZPTE92NjlKjv0.webp" alt="Detailing" className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" />
-                    <div className="absolute inset-0 bg-black-50 transition-opacity duration-300" />
-                  </div>
-                  <h3 className="text-white font-medium text-2xl z-10 transition-transform duration-300 group-hover:-translate-y-1">Professional Detailing</h3>
+                <div className="z-10 flex flex-col gap-2 transform transition-transform duration-500 group-hover:-translate-y-2">
+                  <h3 className="text-white font-bold text-3xl tracking-tight">Financing</h3>
+                  <p className="text-white/80 font-medium text-lg">Flexible loan and EMI options</p>
                 </div>
-              </StaggerItem>
-            </div>
-            <div className="flex flex-col gap-6 w-full lg:w-1/2 h-full">
-              <StaggerItem className="w-full h-[40%]">
-                <div className="w-full h-full bg-black-main rounded-[16px] relative overflow-hidden p-5 flex flex-col justify-end items-center group cursor-pointer">
-                  <div className="absolute inset-0 z-0 flex justify-center items-center opacity-30">
-                    <div className="w-[350px] h-[350px] rounded-full border border-white/20 absolute -bottom-[166px] -left-[79px]" />
-                  </div>
-                  <h3 className="text-white font-medium text-2xl z-10 transition-transform duration-300 group-hover:-translate-y-1">Verified History & Trusted Brand</h3>
+              </div>
+            </StaggerItem>
+            
+            <StaggerItem className="w-full">
+              <div className="w-full h-[300px] relative rounded-[24px] overflow-hidden p-8 flex flex-col justify-end group cursor-pointer border border-black/5 bg-white shadow-md hover:shadow-xl transition-shadow duration-500">
+                <div className="z-10 flex flex-col gap-2 transform transition-transform duration-500 group-hover:-translate-y-2">
+                  <h3 className="text-black font-bold text-3xl tracking-tight">Warranty</h3>
+                  <p className="text-black/70 font-medium text-lg">Reliable post-purchase support</p>
                 </div>
-              </StaggerItem>
-              <StaggerItem className="w-full h-[30%]">
-                <div className="w-full h-full relative rounded-[16px] overflow-hidden p-5 flex flex-col justify-end items-center group cursor-pointer">
-                  <div className="absolute inset-0 z-0">
-                    <img src="https://framerusercontent.com/images/TcgsebcRv5iSa7dvNbl6PMQECA.webp" alt="Warranty" className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" />
-                    <div className="absolute inset-0 bg-black-50 transition-opacity duration-300" />
-                  </div>
-                  <h3 className="text-white font-medium text-2xl z-10 transition-transform duration-300 group-hover:-translate-y-1">Warranty Support</h3>
+                <div className="absolute top-8 right-8 bg-black/5 p-4 rounded-full transition-transform duration-500 group-hover:scale-110">
+                  <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#000" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+                  </svg>
                 </div>
-              </StaggerItem>
-              <StaggerItem className="w-full h-[30%]">
-                <div className="w-full h-full relative rounded-[16px] overflow-hidden p-5 flex flex-row justify-center items-end group cursor-pointer">
-                  <div className="absolute inset-0 z-0">
-                    <img src="https://framerusercontent.com/images/DKYMPBTwzZsENhq8F0kqQLKshtw.jpg" alt="Financing" className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" />
-                    <div className="absolute inset-0 bg-black-50 transition-opacity duration-300" />
-                  </div>
-                  <h3 className="text-white font-medium text-2xl z-10 transition-transform duration-300 group-hover:-translate-y-1">Loan & Financing</h3>
+              </div>
+            </StaggerItem>
+
+            <StaggerItem className="w-full">
+              <div className="w-full h-[300px] relative rounded-[24px] overflow-hidden p-8 flex flex-col justify-end group cursor-pointer border border-black/5 bg-white shadow-md hover:shadow-xl transition-shadow duration-500">
+                <div className="absolute inset-0 z-0">
+                  <img src="https://framerusercontent.com/images/ePT9kuMpmdFFmnCqOllNvONQys.webp" alt="Inspection" className="w-full h-full object-cover opacity-20 transition-transform duration-700 group-hover:scale-105" />
+                  <div className="absolute inset-0 bg-gradient-to-t from-white via-white/80 to-transparent" />
                 </div>
-              </StaggerItem>
-            </div>
+                <div className="z-10 flex flex-col gap-2 transform transition-transform duration-500 group-hover:-translate-y-2">
+                  <h3 className="text-black font-bold text-3xl tracking-tight">Inspection</h3>
+                  <p className="text-black/70 font-medium text-lg">Comprehensive technical evaluation</p>
+                </div>
+              </div>
+            </StaggerItem>
+
+            <StaggerItem className="w-full lg:col-span-2">
+              <div className="w-full h-[300px] relative rounded-[24px] overflow-hidden p-8 flex flex-col justify-end group cursor-pointer bg-black-main shadow-lg">
+                <div className="absolute inset-0 z-0">
+                  <div className="absolute right-0 top-0 w-[400px] h-[400px] bg-white/5 rounded-full blur-3xl -translate-y-1/2 translate-x-1/3 transition-transform duration-700 group-hover:scale-110" />
+                </div>
+                <div className="absolute top-8 right-8 bg-white/10 backdrop-blur-md p-4 rounded-full transition-transform duration-500 group-hover:scale-110">
+                  <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                    <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+                  </svg>
+                </div>
+                <div className="z-10 flex flex-col gap-2 transform transition-transform duration-500 group-hover:-translate-y-2">
+                  <h3 className="text-white font-bold text-3xl tracking-tight">Verified History</h3>
+                  <p className="text-white/80 font-medium text-lg">Transparent ownership and documentation</p>
+                </div>
+              </div>
+            </StaggerItem>
+
+            <StaggerItem className="w-full lg:col-span-3">
+              <div className="w-full h-[240px] relative rounded-[24px] overflow-hidden p-8 flex flex-col md:flex-row items-start md:items-center justify-between group cursor-pointer border border-black/5 bg-background-mid shadow-inner hover:shadow-md transition-shadow duration-500">
+                <div className="z-10 flex flex-col gap-2 max-w-xl transform transition-transform duration-500 group-hover:translate-x-2">
+                  <h3 className="text-black font-bold text-3xl tracking-tight">After Sales</h3>
+                  <p className="text-black/70 font-medium text-lg">Continued support after delivery</p>
+                </div>
+                <div className="mt-6 md:mt-0 z-10">
+                   <div className="h-16 w-16 bg-black rounded-full flex items-center justify-center transform transition-transform duration-500 group-hover:rotate-45">
+                     <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline>
+                     </svg>
+                   </div>
+                </div>
+              </div>
+            </StaggerItem>
           </StaggerContainer>
         </div>
       </section>
@@ -357,48 +397,69 @@ export default function Home() {
             <p className="mobile-section-body">Premium bikes deserve premium service—and that's exactly what you'll get.</p>
           </div>
         </div>
-        <div className="mobile-services-list" style={{ padding: '0 20px' }}>
-          <a className="mobile-service-card" style={{ height: 200 }}>
-            <img src="https://framerusercontent.com/images/ePT9kuMpmdFFmnCqOllNvONQys.webp" alt="Inspection" />
-            <div className="mobile-service-overlay" />
-            <div className="mobile-service-card-body">
-              <h3 className="mobile-service-card-title">Full Technical Inspection</h3>
+        <div className="mobile-services-list" style={{ padding: '0 20px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
+          
+          <div className="mobile-service-card" style={{ height: 220, borderRadius: 24, overflow: 'hidden', position: 'relative' }}>
+            <img src="https://framerusercontent.com/images/DKYMPBTwzZsENhq8F0kqQLKshtw.jpg" alt="Financing" style={{ width: '100%', height: '100%', objectFit: 'cover', position: 'absolute', opacity: 0.7 }} />
+            <div className="mobile-service-overlay" style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to top, rgba(0,0,0,0.9) 10%, rgba(0,0,0,0.1) 80%)' }} />
+            <div className="mobile-service-card-body" style={{ position: 'absolute', bottom: 24, left: 24, zIndex: 10 }}>
+              <h3 className="mobile-service-card-title" style={{ fontSize: '24px', fontWeight: 700, color: '#fff', marginBottom: '4px', letterSpacing: '-0.02em' }}>Financing</h3>
+              <p style={{ color: 'rgba(255,255,255,0.8)', fontSize: '15px', fontWeight: 500 }}>Flexible loan and EMI options</p>
             </div>
-          </a>
-          <a className="mobile-service-card" style={{ height: 180 }}>
-            <img src="https://framerusercontent.com/images/WyhRtolqAtg9ZPTE92NjlKjv0.webp" alt="Detailing" />
-            <div className="mobile-service-overlay" />
-            <div className="mobile-service-card-body">
-              <h3 className="mobile-service-card-title">Professional Detailing</h3>
-            </div>
-          </a>
-          <div className="mobile-service-card-dark">
-            <h3>Verified History & Trusted Brand</h3>
-            <div className="mobile-service-icon-circle">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.6)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+          </div>
+
+          <div style={{ backgroundColor: '#fff', borderRadius: 24, padding: 24, boxShadow: '0 8px 30px rgba(0,0,0,0.04)', border: '1px solid rgba(0,0,0,0.06)', position: 'relative', overflow: 'hidden' }}>
+            <div style={{ position: 'absolute', top: 24, right: 24, background: 'rgba(0,0,0,0.04)', padding: 12, borderRadius: '50%' }}>
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#000" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
               </svg>
             </div>
+            <div style={{ marginTop: 20 }}>
+              <h3 style={{ fontSize: '24px', fontWeight: 700, color: '#000', marginBottom: 6, letterSpacing: '-0.02em' }}>Warranty</h3>
+              <p style={{ color: 'rgba(0,0,0,0.6)', fontSize: '15px', fontWeight: 500 }}>Reliable post-purchase support</p>
+            </div>
           </div>
-          <a className="mobile-service-card" style={{ height: 160 }}>
-            <img src="https://framerusercontent.com/images/TcgsebcRv5iSa7dvNbl6PMQECA.webp" alt="Warranty" />
-            <div className="mobile-service-overlay" />
-            <div className="mobile-service-card-body">
-              <h3 className="mobile-service-card-title">Warranty Support</h3>
+
+          <div className="mobile-service-card" style={{ height: 220, borderRadius: 24, overflow: 'hidden', position: 'relative', border: '1px solid rgba(0,0,0,0.06)' }}>
+            <img src="https://framerusercontent.com/images/ePT9kuMpmdFFmnCqOllNvONQys.webp" alt="Inspection" style={{ width: '100%', height: '100%', objectFit: 'cover', position: 'absolute', opacity: 0.3 }} />
+            <div className="mobile-service-overlay" style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to top, rgba(255,255,255,1) 20%, rgba(255,255,255,0.4) 100%)' }} />
+            <div className="mobile-service-card-body" style={{ position: 'absolute', bottom: 24, left: 24, zIndex: 10 }}>
+              <h3 className="mobile-service-card-title" style={{ fontSize: '24px', fontWeight: 700, color: '#000', marginBottom: '4px', letterSpacing: '-0.02em' }}>Inspection</h3>
+              <p style={{ color: 'rgba(0,0,0,0.7)', fontSize: '15px', fontWeight: 500 }}>Comprehensive technical evaluation</p>
             </div>
-          </a>
-          <a className="mobile-service-card" style={{ height: 160 }}>
-            <img src="https://framerusercontent.com/images/DKYMPBTwzZsENhq8F0kqQLKshtw.jpg" alt="Financing" />
-            <div className="mobile-service-overlay" />
-            <div className="mobile-service-card-body">
-              <h3 className="mobile-service-card-title">Loan & Financing</h3>
+          </div>
+
+          <div style={{ backgroundColor: '#111', borderRadius: 24, padding: 24, position: 'relative', overflow: 'hidden' }}>
+            <div style={{ position: 'absolute', right: -30, top: -30, width: 140, height: 140, background: 'rgba(255,255,255,0.05)', borderRadius: '50%', filter: 'blur(24px)' }} />
+            <div style={{ position: 'absolute', top: 24, right: 24, background: 'rgba(255,255,255,0.1)', padding: 12, borderRadius: '50%', backdropFilter: 'blur(12px)' }}>
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+              </svg>
             </div>
-          </a>
+            <div style={{ marginTop: 20 }}>
+              <h3 style={{ fontSize: '24px', fontWeight: 700, color: '#fff', marginBottom: 6, letterSpacing: '-0.02em' }}>Verified History</h3>
+              <p style={{ color: 'rgba(255,255,255,0.7)', fontSize: '15px', fontWeight: 500 }}>Transparent ownership & documentation</p>
+            </div>
+          </div>
+
+          <div style={{ backgroundColor: '#f5f5f7', borderRadius: 24, padding: 24, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <div>
+              <h3 style={{ fontSize: '24px', fontWeight: 700, color: '#000', marginBottom: 4, letterSpacing: '-0.02em' }}>After Sales</h3>
+              <p style={{ color: 'rgba(0,0,0,0.6)', fontSize: '15px', fontWeight: 500 }}>Continued support after delivery</p>
+            </div>
+            <div style={{ width: 48, height: 48, background: '#000', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline>
+               </svg>
+            </div>
+          </div>
+
         </div>
       </section>
 
       {/* ══════════════════════════════════════════════════
           TESTIMONIALS / STATS
+          Real KL7 Garage customer reviews (grammar-corrected)
       ══════════════════════════════════════════════════ */}
 
       {/* ── Desktop ── */}
@@ -408,22 +469,46 @@ export default function Home() {
             <div className="flex flex-row justify-between items-start w-full">
               <div className="flex flex-col gap-4 max-w-[550px]">
                 <div className="bg-white border border-grey-main rounded-full px-4 py-2 w-fit">
-                  <span className="text-base font-medium uppercase tracking-wider">TESTIMONIALS</span>
+                  <span className="text-base font-medium uppercase tracking-wider">CUSTOMER REVIEWS</span>
                 </div>
-                <h2 className="text-[48px] font-bold leading-tight tracking-[-0.03em] max-w-[480px]">Great Numbers, Happy Riders.</h2>
+                <h2 className="text-[48px] font-bold leading-tight tracking-[-0.03em] max-w-[480px]">What Our Riders Say.</h2>
               </div>
               <div className="flex flex-col gap-6 items-start self-end max-w-[480px]">
-                <p className="text-text-black font-medium text-base">Real experiences from riders who found their dream bike and trusted us completely.</p>
+                <p className="text-text-black font-medium text-base">Real reviews from real customers who trusted KL7 Garage with their purchase.</p>
                 <Button asLink to="/inventory" variant="primary">Browse Bikes</Button>
               </div>
             </div>
           </FadeIn>
           <StaggerContainer delayChildren={0.2} staggerChildren={0.1} className="flex flex-col lg:flex-row gap-6">
             <div className="w-full lg:w-[65%] grid grid-cols-1 md:grid-cols-2 gap-6">
-              <StaggerItem><TestimonialCard name="Amir Razali" quote="Outstanding service from start to finish, truly professional team and exceptional bike quality throughout" vehicle="Ducati Panigale V4 Owner" /></StaggerItem>
-              <StaggerItem><TestimonialCard name="Haziq Farhan" quote="Transparent pricing, honest advice, and zero pressure—exactly what buying a pre-owned bike should be" vehicle="Honda CBR1000RR Owner" /></StaggerItem>
-              <StaggerItem><TestimonialCard name="Syafiq Danial" quote="Incredible selection of pristine bikes, each one meticulously inspected and beautifully presented to perfection" vehicle="Kawasaki Ninja ZX-10R Owner" /></StaggerItem>
-              <StaggerItem><TestimonialCard name="Daniel Lim" quote="Knowledgeable team who genuinely care, made finding my dream ride effortless and enjoyable" vehicle="BMW S1000RR Owner" /></StaggerItem>
+              <StaggerItem>
+                <TestimonialCard
+                  name="Arun Kumar"
+                  quote="Very good service. Got my bike at a very reasonable price. The staff was helpful and the whole process was smooth and hassle-free. Highly recommended!"
+                  vehicle="KL7 Garage Customer"
+                />
+              </StaggerItem>
+              <StaggerItem>
+                <TestimonialCard
+                  name="Vishnu V"
+                  quote="Excellent experience! The team is very friendly and transparent. No hidden charges — what they quoted is what I paid. The bike was in perfect condition as described."
+                  vehicle="KL7 Garage Customer"
+                />
+              </StaggerItem>
+              <StaggerItem>
+                <TestimonialCard
+                  name="Sreehari S"
+                  quote="I bought my bike from KL7 Garage and I am very happy with the purchase. The staff explained everything clearly and helped me with the documentation as well. Great place!"
+                  vehicle="KL7 Garage Customer"
+                />
+              </StaggerItem>
+              <StaggerItem>
+                <TestimonialCard
+                  name="Midhun M"
+                  quote="Best used bike showroom in Kochi. Very genuine dealers — they showed me multiple options within my budget without any pressure. Will definitely recommend to friends."
+                  vehicle="KL7 Garage Customer"
+                />
+              </StaggerItem>
             </div>
             <div className="w-full lg:w-[35%] flex flex-col gap-6">
               <StaggerItem className="h-[180px]">
@@ -440,11 +525,16 @@ export default function Home() {
               </StaggerItem>
               <StaggerItem className="h-[120px]">
                 <div className="bg-background-main rounded-none flex flex-col justify-end items-start h-full gap-2 pt-6">
-                  <div className="flex gap-2 items-center bg-white border border-grey-main rounded-full px-4 py-2 hover:bg-background-mid cursor-pointer transition-colors">
-                    <span className="font-bold text-black">Google Rating 5.0</span>
+                  <a
+                    href="https://maps.app.goo.gl/bx1MVSCQcGQs73hn9"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex gap-2 items-center bg-white border border-grey-main rounded-full px-4 py-2 hover:bg-background-mid cursor-pointer transition-colors"
+                  >
+                    <span className="font-bold text-black">Google Rating 4.8</span>
                     <span className="text-yellow-500">★★★★★</span>
-                  </div>
-                  <span className="text-sm font-medium text-text-black">From +1000 reviews</span>
+                  </a>
+                  <span className="text-sm font-medium text-text-black">Across both KL7 Garage locations</span>
                 </div>
               </StaggerItem>
             </div>
@@ -452,12 +542,12 @@ export default function Home() {
         </div>
       </section>
 
-      {/* ── Mobile Stats ── */}
+      {/* ── Mobile Stats + Reviews ── */}
       <section className="mobile-only mobile-section">
         <div className="mobile-section-inner">
           <div className="mobile-section-header">
             <span className="mobile-eyebrow">By the Numbers</span>
-            <h2 className="mobile-section-title">Great Numbers, Happy Riders.</h2>
+            <h2 className="mobile-section-title">What Our Riders Say.</h2>
           </div>
         </div>
         <div className="mobile-stats-scroll">
@@ -475,22 +565,22 @@ export default function Home() {
           </div>
           <div className="mobile-stat-card-rating">
             <span className="stars">★★★★★</span>
-            <span className="rating-score">5.0</span>
-            <span className="rating-label">Google · 1000+ reviews</span>
+            <span className="rating-score">4.8</span>
+            <span className="rating-label">Google · Both Locations</span>
           </div>
         </div>
 
         {/* Testimonials Scroll */}
         <div style={{ marginTop: 28 }}>
           <div className="mobile-section-inner" style={{ marginBottom: 16 }}>
-            <span className="mobile-eyebrow">Testimonials</span>
+            <span className="mobile-eyebrow">Customer Reviews</span>
           </div>
           <div className="mobile-testimonial-scroll">
             {[
-              { name: "Amir Razali", quote: "Outstanding service from start to finish. Truly professional team and exceptional bike quality throughout.", vehicle: "Ducati Panigale V4 Owner" },
-              { name: "Haziq Farhan", quote: "Transparent pricing, honest advice, and zero pressure—exactly what buying a pre-owned bike should be.", vehicle: "Honda CBR1000RR Owner" },
-              { name: "Syafiq Danial", quote: "Incredible selection of pristine bikes, each one meticulously inspected and beautifully presented.", vehicle: "Kawasaki Ninja ZX-10R Owner" },
-              { name: "Daniel Lim", quote: "Knowledgeable team who genuinely care. Made finding my dream ride effortless and enjoyable.", vehicle: "BMW S1000RR Owner" },
+              { name: "Arun Kumar", quote: "Very good service. Got my bike at a very reasonable price. The staff was helpful and the whole process was smooth and hassle-free. Highly recommended!", vehicle: "KL7 Garage Customer" },
+              { name: "Vishnu V", quote: "Excellent experience! The team is very friendly and transparent. No hidden charges — what they quoted is what I paid. The bike was in perfect condition as described.", vehicle: "KL7 Garage Customer" },
+              { name: "Sreehari S", quote: "I bought my bike from KL7 Garage and I am very happy with the purchase. The staff explained everything clearly and helped me with the documentation as well.", vehicle: "KL7 Garage Customer" },
+              { name: "Midhun M", quote: "Best used bike showroom in Kochi. Very genuine dealers — they showed me multiple options within my budget without any pressure. Will definitely recommend to friends.", vehicle: "KL7 Garage Customer" },
             ].map((t, i) => (
               <div key={i} className="mobile-testimonial-card">
                 <p className="mobile-testimonial-quote">"{t.quote}"</p>
@@ -561,81 +651,6 @@ export default function Home() {
         <div className="mobile-section-inner" style={{ marginTop: 20 }}>
           <Link to="/about-us" className="mobile-view-all-link" style={{ margin: 0 }}>
             Meet the Full Team
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-              <polyline points="9 18 15 12 9 6" />
-            </svg>
-          </Link>
-        </div>
-      </section>
-
-      {/* ══════════════════════════════════════════════════
-          BLOG
-      ══════════════════════════════════════════════════ */}
-
-      {/* ── Desktop ── */}
-      <section className="desktop-only w-full bg-background-main py-20 flex flex-col items-center">
-        <div className="max-w-[1480px] w-full px-8 flex flex-col gap-20">
-          <FadeIn direction="up">
-            <div className="flex flex-col lg:flex-row justify-between items-start w-full gap-20">
-              <div className="flex flex-col gap-6 w-full lg:w-[40%]">
-                <div className="bg-white border border-grey-main rounded-full px-4 py-2 w-fit">
-                  <span className="text-base font-medium uppercase tracking-wider">BLOG</span>
-                </div>
-                <h2 className="text-[48px] font-bold leading-tight tracking-[-0.03em] max-w-[480px]">Insights & Expertise Now</h2>
-                <p className="text-text-black font-medium text-base mt-2">Market trends, buying guides, and insider knowledge to help you make smarter decisions.</p>
-                <Button asLink to="/journal" variant="primary" className="mt-2">View All</Button>
-              </div>
-              <StaggerContainer delayChildren={0.2} staggerChildren={0.15} className="w-full lg:w-[60%] grid grid-cols-1 md:grid-cols-2 gap-6">
-                {getFeaturedBlog().slice(0, 2).map((post) => (
-                  <StaggerItem key={post.id} className="min-h-[384px]">
-                    <BlogCard item={post} />
-                  </StaggerItem>
-                ))}
-              </StaggerContainer>
-            </div>
-          </FadeIn>
-        </div>
-      </section>
-
-      {/* ── Mobile Blog ── */}
-      <section className="mobile-only mobile-section">
-        <div className="mobile-section-inner">
-          <div className="mobile-section-header">
-            <span className="mobile-eyebrow">Blog</span>
-            <h2 className="mobile-section-title">Insights & Expertise</h2>
-            <p className="mobile-section-body">Market trends, buying guides, and insider knowledge.</p>
-          </div>
-        </div>
-        <div className="mobile-blog-list">
-          {featuredPosts.map((post) => {
-            const { slug, fieldData } = post;
-            const { ems8fj_dg: image, vE5dzHwR_: title, Kbtb6KX_T: excerpt } = fieldData;
-            return (
-              <Link key={post.id} to={`/blog/${slug}`} className="mobile-blog-card">
-                <div className="mobile-blog-card-img">
-                  {image?.value
-                    ? <img src={image.value} alt={title?.value} />
-                    : <div style={{ width: '100%', height: '100%', background: '#eee' }} />
-                  }
-                </div>
-                <div className="mobile-blog-card-body">
-                  <span className="mobile-blog-card-category">Insights</span>
-                  <h3 className="mobile-blog-card-title">{title?.value}</h3>
-                  <p className="mobile-blog-card-excerpt">{excerpt?.value}</p>
-                  <div className="mobile-blog-read-more">
-                    Read Article
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                      <polyline points="9 18 15 12 9 6" />
-                    </svg>
-                  </div>
-                </div>
-              </Link>
-            );
-          })}
-        </div>
-        <div className="mobile-section-inner" style={{ marginTop: 20 }}>
-          <Link to="/journal" className="mobile-view-all-link" style={{ margin: 0 }}>
-            View All Articles
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
               <polyline points="9 18 15 12 9 6" />
             </svg>

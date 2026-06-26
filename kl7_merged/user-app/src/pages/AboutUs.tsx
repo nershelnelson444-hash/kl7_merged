@@ -1,4 +1,4 @@
-import React, { useRef, useState } from 'react';
+import React, { useRef } from 'react';
 import { motion, useScroll, useTransform, useInView } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import Button from '../components/Button';
@@ -158,6 +158,57 @@ function StatItem({ number, suffix, label, sublabel, index }: StatItemProps) {
   );
 }
 
+/* ─── SHOWROOM LOCATION CARD ────────────────────────────────────────── */
+interface ShowroomCardProps {
+  name: string;
+  address: string;
+  mapsUrl: string;
+  embedSrc: string;
+  index: number;
+}
+
+function ShowroomCard({ name, address, mapsUrl, embedSrc, index }: ShowroomCardProps) {
+  return (
+    <ScrollReveal staggerIndex={index} offsetStart="start 90%" offsetEnd="start 55%">
+      <motion.div
+        className="rounded-2xl overflow-hidden border border-[#E0E0E0] bg-white flex flex-col"
+        whileHover={{ y: -4, transition: springs.hover }}
+      >
+        <div className="w-full h-[260px] overflow-hidden">
+          <iframe
+            src={embedSrc}
+            width="100%"
+            height="100%"
+            style={{ border: 0 }}
+            allowFullScreen
+            loading="lazy"
+            referrerPolicy="no-referrer-when-downgrade"
+            title={name}
+          />
+        </div>
+        <div className="p-6 flex flex-col gap-4">
+          <div>
+            <h3 className="text-[18px] font-bold text-black mb-1">{name}</h3>
+            <p className="text-[#5A5A5A] text-[14px] leading-relaxed">{address}</p>
+          </div>
+          <a
+            href={mapsUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-2 text-[13px] font-bold uppercase tracking-widest text-black hover:text-[#555] transition-colors"
+          >
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
+              <circle cx="12" cy="10" r="3" />
+            </svg>
+            Get Directions
+          </a>
+        </div>
+      </motion.div>
+    </ScrollReveal>
+  );
+}
+
 /* ─── MAIN COMPONENT ────────────────────────────────────────────────── */
 export default function AboutUs() {
   const heroRef = useRef<HTMLElement>(null);
@@ -173,7 +224,6 @@ export default function AboutUs() {
 
       {/* ─── 1. HERO ───────────────────────────────────────────────── */}
       <section ref={heroRef} className="relative h-screen min-h-[700px] flex items-end overflow-hidden">
-        {/* Background image with parallax */}
         <motion.div className="absolute inset-0 z-0" style={{ y: heroImageY }}>
           <img
             src="https://framerusercontent.com/images/ePT9kuMpmdFFmnCqOllNvONQys.webp"
@@ -183,7 +233,6 @@ export default function AboutUs() {
           <div className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-black/10" />
         </motion.div>
 
-        {/* Hero content */}
         <motion.div
           className="relative z-10 w-full max-w-[1480px] mx-auto px-8 pb-20"
           style={{ opacity: heroOpacity }}
@@ -194,13 +243,13 @@ export default function AboutUs() {
             transition={{ duration: 1, ease: easings.easeOutMotion, delay: 0.2 }}
           >
             <p className="text-[11px] font-bold uppercase tracking-[0.25em] text-white/60 mb-6">
-              Kuala Lumpur · Est. 2015
+              Kochi, Kerala · Est. 2015
             </p>
             <h1 className="text-[clamp(40px,6vw,88px)] font-bold text-white leading-[0.95] tracking-tight mb-8 max-w-3xl">
               Born from a passion<br />for the machine.
             </h1>
             <p className="text-white/70 text-[18px] max-w-md leading-relaxed mb-10">
-              Malaysia's most trusted pre-owned motorcycle showroom. Built on honesty, driven by obsession.
+              Kerala's most trusted pre-owned motorcycle showroom. Built on honesty, driven by obsession.
             </p>
             <div className="flex flex-row gap-4 flex-wrap">
               <Button variant="inverse">Our Story</Button>
@@ -217,7 +266,6 @@ export default function AboutUs() {
           </motion.div>
         </motion.div>
 
-        {/* Scroll indicator */}
         <motion.div
           className="absolute bottom-8 right-8 z-10 flex flex-col items-center gap-2"
           initial={{ opacity: 0 }}
@@ -249,18 +297,18 @@ export default function AboutUs() {
           <div className="flex flex-col gap-8">
             <ScrollReveal staggerIndex={1} offsetStart="start 90%" offsetEnd="start 55%">
               <p className="text-[#3A3A3A] text-[17px] leading-relaxed">
-                KL7 Garage was founded in 2015 with one conviction: that buying a pre-owned motorcycle in Malaysia shouldn't feel like a negotiation you're bound to lose. Our founder, a lifelong rider, experienced firsthand the opacity, pressure tactics, and broken trust that defined the industry.
+                For the past 10 years, KL7 Garage has been one of Kerala’s trusted destinations for premium pre-owned motorcycles. Built from a passion for riding and a commitment to quality, we have helped hundreds of riders buy and sell motorcycles with complete confidence, transparency, and peace of mind.
               </p>
             </ScrollReveal>
             <ScrollReveal staggerIndex={2} offsetStart="start 90%" offsetEnd="start 55%">
               <p className="text-[#3A3A3A] text-[17px] leading-relaxed">
-                So she built the showroom she wished had existed — one where every price is transparent, every bike is rigorously inspected, and every customer leaves feeling respected. Ten years on, we've served over 500 riders, facilitated more than RM350M in financing, and built a reputation that speaks for itself.
+                With 500+ happy customers and a strong reputation in Kochi, KL7 Garage continues to deliver carefully inspected motorcycles, fair pricing, and exceptional service. Every bike that leaves our showroom carries more than just value — it carries trust built over a decade.
               </p>
             </ScrollReveal>
             <ScrollReveal staggerIndex={3} offsetStart="start 90%" offsetEnd="start 55%">
               <blockquote className="border-l-2 border-black pl-6 text-[17px] font-medium text-black italic leading-relaxed">
                 "The best showroom experience isn't about the bikes on the floor. It's about the trust you build before a single key is handed over."
-                <footer className="mt-3 text-[13px] font-bold not-italic text-[#808080] uppercase tracking-widest">Nurul Ain · Founder</footer>
+                <footer className="mt-3 text-[13px] font-bold not-italic text-[#808080] uppercase tracking-widest">KL7 Garage · Founder</footer>
               </blockquote>
             </ScrollReveal>
           </div>
@@ -297,7 +345,7 @@ export default function AboutUs() {
               </svg>
             }
             title="Earned Trust"
-            description="Trust isn't declared — it's built one honest interaction at a time. We've spent 10 years proving that integrity is a better business model than pressure."
+            description="Trust isn't declared — it's built one honest interaction at a time. We've spent years proving that integrity is a better business model than pressure."
           />
           <ValueCard
             index={2}
@@ -448,7 +496,7 @@ export default function AboutUs() {
               <WhyCard
                 number="02"
                 title="Flexible Financing"
-                description="In-house loan facilitation with partnerships across Malaysia's leading banks. Competitive rates, fast approvals, honest terms."
+                description="In-house loan facilitation with partnerships across Kerala's leading banks. Competitive rates, fast approvals, honest terms."
                 index={1}
               />
               <WhyCard
@@ -460,7 +508,7 @@ export default function AboutUs() {
               <WhyCard
                 number="04"
                 title="Clean Documentation"
-                description="Full ownership history, JPJ paperwork, and transfer assistance handled by our experienced team. Zero headaches."
+                description="Full ownership history, RTO paperwork, and transfer assistance handled by our experienced team. Zero headaches."
                 index={3}
               />
               <WhyCard
@@ -480,7 +528,7 @@ export default function AboutUs() {
           <div className="grid grid-cols-2 md:grid-cols-4 divide-x divide-[#2A2A2A]">
             <StatItem number={10} suffix="+" label="Years in Business" sublabel="Since 2015" index={0} />
             <StatItem number={500} suffix="+" label="Riders Served" sublabel="And growing" index={1} />
-            <StatItem number={350} suffix="M+" label="RM Financed" sublabel="Total value" index={2} />
+            <StatItem number={2} suffix="" label="Showroom Locations" sublabel="Across Kochi" index={2} />
             <StatItem number={98} suffix="%" label="Satisfaction Rate" sublabel="Verified reviews" index={3} />
           </div>
         </div>
@@ -493,50 +541,60 @@ export default function AboutUs() {
           <h2 className="text-[clamp(34px,4vw,52px)] font-bold text-black leading-[1.05] tracking-tight mb-4">
             Don't take our word for it.
           </h2>
-          <p className="text-[#808080] text-[15px] mb-16">Real riders. Real experiences.</p>
+          <div className="flex items-center gap-3 mb-16">
+            <div className="flex gap-1">
+              {[1,2,3,4,5].map((i) => (
+                <svg key={i} width="18" height="18" viewBox="0 0 14 14" fill={i <= 4 ? '#F59E0B' : 'none'} stroke="#F59E0B" strokeWidth="0.5">
+                  <path d="M7 0l1.76 3.57L13 4.27l-3 2.92.71 4.12L7 9.27l-3.71 2.04.71-4.12L1 4.27l4.24-.7L7 0z" />
+                </svg>
+              ))}
+            </div>
+            <span className="text-[#1A1A1A] font-bold text-[18px]">4.8</span>
+            <span className="text-[#808080] text-[14px]">on Google · Across both KL7 Garage locations</span>
+          </div>
         </ScrollReveal>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           <Testimonial
             index={0}
-            quote="I've bought bikes from three different showrooms over the years. KL7 was the first time I didn't feel like I was in a negotiation designed for me to lose. Transparent, fast, respectful."
-            name="Ahmad Syafiq"
-            bike="Ducati Monster 821"
+            quote="Very good service. Got my bike at a very reasonable price. The staff was helpful and the whole process was smooth and hassle-free. Highly recommended!"
+            name="Arun Kumar"
+            bike="KL7 Garage Customer"
             rating={5}
           />
           <Testimonial
             index={1}
-            quote="The team took two hours explaining the bike's history, financing options, and even suggested I test ride a different model that might suit me better. That's not sales — that's service."
-            name="Priya Krishnan"
-            bike="Kawasaki Z900"
+            quote="Excellent experience! The team is very friendly and transparent. No hidden charges — what they quoted is what I paid. The bike was in perfect condition as described."
+            name="Vishnu V"
+            bike="KL7 Garage Customer"
             rating={5}
           />
           <Testimonial
             index={2}
-            quote="Bought my CBR from KL7 six months ago. Everything they told me about the bike's condition was accurate. No surprises. Exactly what this industry needs more of."
-            name="Daniel Ng"
-            bike="Honda CBR650R"
+            quote="I bought my bike from KL7 Garage and I am very happy with the purchase. The staff explained everything clearly and helped me with the documentation as well. Great place!"
+            name="Sreehari S"
+            bike="KL7 Garage Customer"
             rating={5}
           />
           <Testimonial
             index={3}
-            quote="Financing was sorted in under 48 hours. The documentation team handled all the transfer paperwork. I just showed up, signed, and rode home. Brilliant experience."
-            name="Faris Ismail"
-            bike="BMW S1000RR"
+            quote="Best used bike showroom in Kochi. Very genuine dealers — they showed me multiple options within my budget without any pressure. Will definitely recommend to friends."
+            name="Midhun M"
+            bike="KL7 Garage Customer"
             rating={5}
           />
           <Testimonial
             index={4}
-            quote="Called them three months after purchase with a technical question. They answered immediately, connected me with a mechanic, and followed up the next day. After-sales is real here."
-            name="Siti Aminah"
-            bike="Triumph Street Triple"
+            quote="The team was very patient and answered all my questions honestly. I never felt rushed or pressured. The bike condition matched exactly what they had described. Trustworthy place."
+            name="Rahul Jose"
+            bike="KL7 Garage Customer"
             rating={5}
           />
           <Testimonial
             index={5}
-            quote="As a first-time buyer I was nervous. Farid walked me through everything — loan options, insurance, maintenance schedules. Never felt rushed. Walked out with confidence."
-            name="Haziq Rahman"
-            bike="Yamaha MT-07"
+            quote="Quick process, fair pricing, and proper documentation handled without any issues. The staff was professional and kept me updated throughout. Really happy with my purchase."
+            name="Akhil Rajan"
+            bike="KL7 Garage Customer"
             rating={5}
           />
         </div>
@@ -544,7 +602,55 @@ export default function AboutUs() {
 
       <Divider />
 
-      {/* ─── 9. FAQ ────────────────────────────────────────────────── */}
+      {/* ─── 9. OUR SHOWROOM LOCATIONS ─────────────────────────────── */}
+      <section className="py-[120px] px-8 max-w-[1480px] mx-auto w-full">
+        <ScrollReveal offsetStart="start 90%" offsetEnd="start 60%">
+          <SectionLabel>Find Us</SectionLabel>
+          <h2 className="text-[clamp(34px,4vw,52px)] font-bold text-black leading-[1.05] tracking-tight mb-4">
+            Visit our showrooms.
+          </h2>
+          <p className="text-[#5A5A5A] text-[16px] mb-16 leading-relaxed max-w-lg">
+            We have two convenient locations in Kochi. Walk in any day — no appointment needed.
+          </p>
+        </ScrollReveal>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+          <ShowroomCard
+            index={0}
+            name="KL7 Garage — Thrikkakara"
+            address="Thoppil, Pipeline Road, Thrikkakara, Ernakulam, Kerala — 682021"
+            mapsUrl="https://maps.app.goo.gl/bx1MVSCQcGQs73hn9"
+            embedSrc="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3929.2!2d76.3175511!3d10.0274227!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3b080d2687fd6dbf%3A0x6efc3c632fc2025a!2sKL7%20GARAGE!5e0!3m2!1sen!2sin!4v1700000000000!5m2!1sen!2sin"
+          />
+          <ShowroomCard
+            index={1}
+            name="KL7 Garage — Edapally"
+            address="Near City Tower, Edapally, Ernakulam, Kerala — 682024"
+            mapsUrl="https://maps.app.goo.gl/7p2ArJj8suwLYfTu9"
+            embedSrc="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3929.5!2d76.3077388!3d10.025506!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3b080d5b883c8b51%3A0xff555b5c58cced89!2sKL7%20GARAGE!5e0!3m2!1sen!2sin!4v1700000000001!5m2!1sen!2sin"
+          />
+        </div>
+
+        {/* Opening Hours note */}
+        <ScrollReveal staggerIndex={2} offsetStart="start 90%" offsetEnd="start 70%">
+          <div className="mt-10 p-6 rounded-2xl bg-white border border-[#E0E0E0] flex flex-col sm:flex-row gap-6 sm:items-center justify-between">
+            <div className="flex items-center gap-4">
+              <div className="w-10 h-10 rounded-xl bg-black flex items-center justify-center shrink-0">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <circle cx="12" cy="12" r="10" /><polyline points="12 6 12 12 16 14" />
+                </svg>
+              </div>
+              <div>
+                <p className="font-bold text-black text-[15px]">Open 7 Days a Week</p>
+                <p className="text-[#5A5A5A] text-[14px]">10:00 AM – 7:00 PM · Both Locations</p>
+              </div>
+            </div>
+            <Button asLink to="/contact" variant="primary">Contact Us</Button>
+          </div>
+        </ScrollReveal>
+      </section>
+
+      {/* ─── 10. FAQ ────────────────────────────────────────────────── */}
       <section className="py-[130px] px-8 max-w-[1480px] mx-auto w-full">
         <div className="grid grid-cols-1 lg:grid-cols-5 gap-20">
           <div className="lg:col-span-2 lg:sticky lg:top-32 self-start">
@@ -565,15 +671,15 @@ export default function AboutUs() {
                 items={[
                   {
                     question: "What makes KL7 different from other showrooms?",
-                    answer: "We eliminated pressure tactics entirely. Fixed, transparent pricing. No negotiation theatre. No hidden fees. Our team earns no commission-based incentives to upsell — they're measured on customer satisfaction. That changes everything about how the conversation feels."
+                    answer: "We eliminated pressure tactics entirely. Fixed, transparent pricing. No negotiation theatre. No hidden fees. Our team is measured on customer satisfaction, not upselling. That changes everything about how the conversation feels."
                   },
                   {
                     question: "How do you verify the bikes you sell?",
-                    answer: "Every motorcycle goes through a multi-point technical inspection conducted by certified mechanics. We check engine, transmission, brakes, tyres, electricals, frame integrity, and service history. Only bikes that meet our standard make the floor."
+                    answer: "Every motorcycle goes through a multi-point technical inspection conducted by our mechanics. We check the engine, transmission, brakes, tyres, electricals, frame integrity, and service history. Only bikes that meet our standard reach the showroom floor."
                   },
                   {
                     question: "Can I get financing through KL7?",
-                    answer: "Yes. We work with Malaysia's leading banks and financial institutions and can facilitate competitive loan packages in-house. Most approvals come back within 24–48 hours. Our finance team walks you through every option without pressure."
+                    answer: "Yes. We work with Kerala's leading banks and financial institutions and can facilitate competitive loan packages in-house. Most approvals come back within 24–48 hours. Our finance team walks you through every option without pressure."
                   },
                   {
                     question: "What warranty comes with the bike?",
@@ -581,11 +687,11 @@ export default function AboutUs() {
                   },
                   {
                     question: "Do you buy or consign my current bike?",
-                    answer: "Both. We offer outright purchases at fair market rates (no lowballing) and a consignment arrangement where we sell your bike for you. Either way, we handle all documentation and JPJ transfer paperwork."
+                    answer: "Both. We offer outright purchases at fair market rates (no lowballing) and a consignment arrangement where we sell your bike for you. Either way, we handle all RTO documentation and transfer paperwork."
                   },
                   {
                     question: "What brands do you carry?",
-                    answer: "We stock Ducati, BMW Motorrad, Triumph, KTM, Kawasaki, Honda, Yamaha, Suzuki, Harley-Davidson, and Aprilia, among others. Inventory rotates regularly — follow our Instagram or check the live inventory page for what's available now."
+                    answer: "We stock Royal Enfield, KTM, Bajaj, Honda, Yamaha, TVS, Suzuki, and more. Inventory rotates regularly — follow our Instagram or check the live inventory page for what's available now."
                   }
                 ]}
               />
@@ -594,7 +700,7 @@ export default function AboutUs() {
         </div>
       </section>
 
-      {/* ─── 10. FINAL CTA ─────────────────────────────────────────── */}
+      {/* ─── 11. FINAL CTA ─────────────────────────────────────────── */}
       <section className="relative overflow-hidden bg-black py-[140px] px-8">
         <div className="absolute inset-0 z-0">
           <img

@@ -46,7 +46,6 @@ export default function Footer() {
               <h4 className="text-sm font-bold uppercase tracking-wider text-text-white-muted">Company</h4>
               <div className="flex flex-col gap-4 font-medium">
                 <Link to="/about-us" className="hover:text-text-white-muted transition-colors">About</Link>
-                <Link to="/journal" className="hover:text-text-white-muted transition-colors">Journal</Link>
                 <Link to="/contact" className="hover:text-text-white-muted transition-colors">Contact</Link>
               </div>
             </div>

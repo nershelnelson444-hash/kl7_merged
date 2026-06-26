@@ -13,7 +13,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { useCustomerEnquiries, useUpdateCustomerEnquiryStatus, useDeleteCustomerEnquiry } from "@/hooks/useCustomerEnquiry";
 import { useDebounce } from "@/hooks/useDebounce";
 import { initials, formatRelativeTime } from "@/lib/utils";
-import type { CustomerEnquiry, CustomerEnquiryStatus } from "@/types";
+import type { CustomerEnquiry, CustomerEnquiryStatus } from "@/types/customerEnquiry.types";
 
 const STATUS_TABS: { value: CustomerEnquiryStatus | "all"; label: string }[] = [
   { value: "all", label: "All" },

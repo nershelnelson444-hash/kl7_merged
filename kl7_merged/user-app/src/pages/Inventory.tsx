@@ -1,5 +1,5 @@
 import React, { useState, useMemo, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 import supabase from '../config/supabaseclient';
 import CarsCard from '../components/CarsCard';
 import FadeIn from '../components/FadeIn';
@@ -18,13 +18,15 @@ function toCamelCase(obj: Record<string, unknown>): Record<string, unknown> {
 }
 
 export default function Inventory() {
+  const [searchParams] = useSearchParams();
   const [bikes, setBikes] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-  const [searchQuery, setSearchQuery] = useState("");
-  const [activeCategory, setActiveCategory] = useState("All");
+  const [searchQuery, setSearchQuery] = useState(searchParams.get('q') ?? '');
+  const [activeCategory, setActiveCategory] = useState('All');
   const [filters, setFilters] = useState<FilterState>(defaultFilters);
   const [appliedFilters, setAppliedFilters] = useState<FilterState>(defaultFilters);
   const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
+  const [searchFocused, setSearchFocused] = useState(false);
 
   useEffect(() => {
     fetchBikes();
@@ -132,53 +134,121 @@ export default function Inventory() {
 
       {/* ─── SEARCH + FILTER TRIGGER ─────────────────── */}
       <section className="w-full bg-background-main border-t border-grey-main sticky top-[78px] z-30">
-        <div className="max-w-[1480px] w-full px-8 mx-auto py-4 flex flex-col gap-4">
-          <div className="flex flex-col gap-3">
-            <div className="hero-search-container w-full h-[64px] bg-white border border-grey-main px-5 flex items-center gap-3">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-text-black-muted shrink-0">
-                <circle cx="11" cy="11" r="8" /><line x1="21" y1="21" x2="16.65" y2="16.65" />
-              </svg>
-              <input
-                type="text"
-                placeholder="Search brands, models..."
-                className="hero-search-bar bg-transparent outline-none text-text-black placeholder:text-text-extra-muted font-medium text-base w-full"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-              />
-            </div>
+        <div className="max-w-[1480px] w-full px-8 mx-auto py-3 flex flex-col gap-3">
 
-            <div className="hidden flex-row items-center gap-2 min-w-0 flex-1">
-              <div className="flex flex-row gap-2 overflow-x-auto hide-scrollbar min-w-0">
-                {categories.map((cat) => (
-                  <Button
-                    key={cat}
-                    variant={activeCategory === cat ? 'primary' : 'inverse'}
-                    onClick={() => setActiveCategory(cat)}
-                    hideIcon
-                    className="whitespace-nowrap shrink-0"
-                  >
-                    {cat}
-                  </Button>
-                ))}
-              </div>
+          {/* ── Search bar ── */}
+          <div
+            className={[
+              // layout
+              "w-full flex items-center gap-2.5",
+              // sizing — 48px desktop, 44px mobile via min-h
+              "h-[48px] sm:h-[52px]",
+              // shape
+              "rounded-2xl",
+              // colours
+              "bg-white",
+              // border: default subtle, blue ring on focus
+              "border",
+              searchFocused
+                ? "border-black/30 shadow-[0_0_0_3px_rgba(0,0,0,0.06)]"
+                : "border-[#e5e5e5]",
+              // padding: horizontal only — vertical centering comes from flex
+              "px-4",
+              // smooth transition
+              "transition-all duration-200",
+            ].join(" ")}
+          >
+            {/* Icon — fixed size, no extra wrapper padding */}
+            <svg
+              width="18"
+              height="18"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              className="text-[#9ca3af] shrink-0"
+            >
+              <circle cx="11" cy="11" r="8" />
+              <line x1="21" y1="21" x2="16.65" y2="16.65" />
+            </svg>
 
+            {/* Input — no extra height, no padding top/bottom, all centering from parent flex */}
+            <input
+              type="text"
+              placeholder="Search brands, models..."
+              className={[
+                "flex-1 min-w-0",
+                "bg-transparent outline-none border-none",
+                "text-[14px] sm:text-[15px] font-medium leading-none",
+                "text-[#111]",
+                "placeholder:text-[#9ca3af] placeholder:font-normal",
+                // remove browser default padding/height quirks
+                "py-0 h-auto",
+              ].join(" ")}
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              onFocus={() => setSearchFocused(true)}
+              onBlur={() => setSearchFocused(false)}
+            />
+
+            {/* Clear button — only visible when there's a query */}
+            {searchQuery && (
               <button
                 type="button"
-                onClick={() => setMobileFiltersOpen(true)}
-                className="lg:hidden shrink-0 ml-auto flex items-center gap-2 rounded-2xl border border-grey-main bg-white px-4 py-2.5 text-sm font-medium text-text-black"
+                onClick={() => setSearchQuery("")}
+                className="shrink-0 flex items-center justify-center w-5 h-5 rounded-full bg-[#e5e5e5] hover:bg-[#d4d4d4] transition-colors"
+                aria-label="Clear search"
               >
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <line x1="4" y1="6" x2="20" y2="6" /><line x1="8" y1="12" x2="16" y2="12" /><line x1="11" y1="18" x2="13" y2="18" />
+                <svg width="10" height="10" viewBox="0 0 10 10" fill="none" stroke="#555" strokeWidth="1.8" strokeLinecap="round">
+                  <line x1="2" y1="2" x2="8" y2="8" />
+                  <line x1="8" y1="2" x2="2" y2="8" />
                 </svg>
-                Filters
-                {activeFilterCount > 0 && (
-                  <span className="flex items-center justify-center w-5 h-5 rounded-full bg-black-main text-white text-[11px] font-bold">
-                    {activeFilterCount}
-                  </span>
-                )}
               </button>
-            </div>
+            )}
           </div>
+
+          {/* ── Category pills + mobile filter button ── */}
+          <div className="flex flex-row items-center gap-2 min-w-0">
+            <div className="flex flex-row gap-2 overflow-x-auto hide-scrollbar min-w-0 flex-1">
+              {categories.map((cat) => (
+                <button
+                  key={cat}
+                  type="button"
+                  onClick={() => setActiveCategory(cat)}
+                  className={[
+                    "whitespace-nowrap shrink-0 px-4 h-[34px] rounded-full text-[13px] font-semibold tracking-wide transition-all duration-150 border",
+                    activeCategory === cat
+                      ? "bg-black text-white border-black"
+                      : "bg-white text-[#444] border-[#e5e5e5] hover:border-black/20 hover:bg-[#fafafa]",
+                  ].join(" ")}
+                >
+                  {cat}
+                </button>
+              ))}
+            </div>
+
+            {/* Mobile filter trigger */}
+            <button
+              type="button"
+              onClick={() => setMobileFiltersOpen(true)}
+              className="lg:hidden shrink-0 ml-1 flex items-center gap-1.5 h-[34px] px-3 rounded-full border border-[#e5e5e5] bg-white text-[13px] font-semibold text-[#444] hover:border-black/20 transition-colors"
+            >
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <line x1="4" y1="6" x2="20" y2="6" />
+                <line x1="8" y1="12" x2="16" y2="12" />
+                <line x1="11" y1="18" x2="13" y2="18" />
+              </svg>
+              Filters
+              {activeFilterCount > 0 && (
+                <span className="flex items-center justify-center w-4 h-4 rounded-full bg-black text-white text-[10px] font-bold leading-none">
+                  {activeFilterCount}
+                </span>
+              )}
+            </button>
+          </div>
+
         </div>
       </section>
 
@@ -201,7 +271,6 @@ export default function Inventory() {
               <StaggerContainer delayChildren={0.1} staggerChildren={0.08} className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
                 {filteredBikes.map((bike) => (
                   <StaggerItem key={bike.id}>
-                    {/* Wrap card in Link — navigates to /inventory/:id */}
                     <Link to={`/inventory/${bike.id}`} className="block">
                       <CarsCard item={{
                         id: bike.id,
