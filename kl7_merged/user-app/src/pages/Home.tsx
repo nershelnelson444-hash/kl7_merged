@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { getFeaturedInventory } from '../data/cms';
+import { supabase } from '../lib/supabaseClient';
 import CarsCard from '../components/CarsCard';
 import TestimonialCard from '../components/TestimonialCard';
 import CountUp from '../components/CountUp';
@@ -50,9 +50,24 @@ const faqItems = [
 ];
 
 export default function Home() {
-  const featuredBikes = getFeaturedInventory().slice(0, 6);
+  const [featuredBikes, setFeaturedBikes] = useState<any[]>([]);
   const navigate = useNavigate();
   const [heroSearch, setHeroSearch] = useState('');
+
+  useEffect(() => {
+    async function fetchFeaturedBikes() {
+      const { data, error } = await supabase
+        .from('bikes')
+        .select('*')
+        .eq('featured', true)
+        .limit(6);
+
+      if (!error && data) {
+        setFeaturedBikes(data);
+      }
+    }
+    fetchFeaturedBikes();
+  }, []);
 
   const handleHeroSearch = (e: React.FormEvent) => {
     e.preventDefault();
@@ -224,9 +239,25 @@ export default function Home() {
               </div>
             </div>
           </FadeIn>
-          <StaggerContainer delayChildren={0.2} staggerChildren={0.15} className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 mt-10">
-            {getFeaturedInventory().slice(0, 3).map((item) => (
-              <StaggerItem key={item.id}><CarsCard item={item} /></StaggerItem>
+            <StaggerContainer delayChildren={0.2} staggerChildren={0.15} className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 mt-10">
+            {featuredBikes.slice(0, 3).map((bike) => (
+              <StaggerItem key={bike.id}>
+                <CarsCard item={{
+                  id: bike.id,
+                  slug: bike.id,
+                  draft: false,
+                  fieldData: {
+                    i251F_cLI: { value: `${bike.brand} ${bike.model}` },
+                    yhmUaSJgn: { value: bike.images?.[0] || '' },
+                    AsGqvZIRE: { value: String(bike.year) },
+                    ieALPznS3: { value: String(bike.price) },
+                    FixYCUMxe: { value: bike.odometer },
+                    XKcYqdDj3: { value: bike.fuel_type },
+                    DUdYPJIP0: { value: bike.specs?.transmission || bike.transmission || '' },
+                    oBzwmlvOK: { value: bike.condition },
+                  }
+                } as any} />
+              </StaggerItem>
             ))}
           </StaggerContainer>
         </div>
@@ -242,45 +273,37 @@ export default function Home() {
           </div>
         </div>
         <div className="mobile-bike-carousel">
-          {featuredBikes.map((item) => {
-            const { slug, fieldData } = item;
-            const {
-              yhmUaSJgn: image, i251F_cLI: name, AsGqvZIRE: year,
-              ieALPznS3: price, FixYCUMxe: mileage, XKcYqdDj3: fuel,
-              DUdYPJIP0: transmission, oBzwmlvOK: badge
-            } = fieldData;
-            return (
-              <Link key={item.id} to={`/inventory/${slug}`} className="mobile-bike-carousel-card">
-                <div className="mobile-bike-card-img">
-                  {image?.value
-                    ? <img src={image.value} alt={name?.value} />
-                    : <div style={{ color: '#aaa', fontSize: 12 }}>No image</div>
-                  }
-                  {badge?.value?.trim() && (
-                    <span className="mobile-bike-card-badge">{badge.value}</span>
-                  )}
-                  {year?.value && (
-                    <span className="mobile-bike-card-year">{year.value}</span>
-                  )}
+          {featuredBikes.map((bike) => (
+            <Link key={bike.id} to={`/inventory/${bike.id}`} className="mobile-bike-carousel-card">
+              <div className="mobile-bike-card-img">
+                {bike.images?.[0]
+                  ? <img src={bike.images[0]} alt={`${bike.brand} ${bike.model}`} />
+                  : <div style={{ color: '#aaa', fontSize: 12 }}>No image</div>
+                }
+                {bike.variant?.trim() && (
+                  <span className="mobile-bike-card-badge">{bike.variant}</span>
+                )}
+                {bike.year && (
+                  <span className="mobile-bike-card-year">{bike.year}</span>
+                )}
+              </div>
+              <div className="mobile-bike-card-body">
+                <p className="mobile-bike-card-name">{bike.brand} {bike.model}</p>
+                <p className="mobile-bike-card-price">₹{Number(bike.price).toLocaleString()}</p>
+                <div className="mobile-bike-card-specs">
+                  <span className="mobile-bike-spec-pill">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                    {Number(bike.odometer).toLocaleString()} mi
+                  </span>
+                  <span className="mobile-bike-spec-pill">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 15v4c0 1.1.9 2 2 2h14a2 2 0 0 0 2-2v-4M17 9l-5-5-5 5M12 4v12"/></svg>
+                    {bike.fuel_type ?? 'Petrol'}
+                  </span>
+                  <span className="mobile-bike-spec-pill">⚙ {bike.transmission?.split('-')[0] ?? 'Auto'}</span>
                 </div>
-                <div className="mobile-bike-card-body">
-                  <p className="mobile-bike-card-name">{name?.value}</p>
-                  <p className="mobile-bike-card-price">RM {price?.value?.toLocaleString?.() ?? price?.value}</p>
-                  <div className="mobile-bike-card-specs">
-                    <span className="mobile-bike-spec-pill">
-                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-                      {mileage?.value?.toLocaleString?.() ?? 0} mi
-                    </span>
-                    <span className="mobile-bike-spec-pill">
-                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 15v4c0 1.1.9 2 2 2h14a2 2 0 0 0 2-2v-4M17 9l-5-5-5 5M12 4v12"/></svg>
-                      {fuel?.value ?? 'Petrol'}
-                    </span>
-                    <span className="mobile-bike-spec-pill">⚙ {transmission?.value?.split('-')[0] ?? 'Auto'}</span>
-                  </div>
-                </div>
-              </Link>
-            );
-          })}
+              </div>
+            </Link>
+          ))}
         </div>
         <Link to="/inventory" className="mobile-view-all-link">
           View All Bikes
