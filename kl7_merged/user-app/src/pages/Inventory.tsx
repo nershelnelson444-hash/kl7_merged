@@ -254,7 +254,7 @@ export default function Inventory() {
 
       {/* ─── CONTENT: SIDEBAR + GRID ─────────────────── */}
       <section className="w-full bg-background-main py-12 pb-16 flex flex-col items-center">
-        <div className="max-w-[1480px] w-full px-8 flex flex-col lg:flex-row gap-10">
+        <div className="max-w-[1480px] w-full px-4 md:px-8 flex flex-col lg:flex-row gap-10">
 
           <aside className="hidden lg:block w-[280px] shrink-0">
             <div className="sticky top-[160px] bg-white border border-grey-main rounded-2xl p-6 max-h-[calc(100vh-180px)] overflow-y-auto">
@@ -268,7 +268,7 @@ export default function Inventory() {
                 <div className="w-8 h-8 border-2 border-black-main border-t-transparent rounded-full animate-spin" />
               </div>
             ) : filteredBikes.length > 0 ? (
-              <StaggerContainer delayChildren={0.1} staggerChildren={0.08} className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+              <StaggerContainer delayChildren={0.1} staggerChildren={0.08} className="grid grid-cols-2 md:grid-cols-2 xl:grid-cols-3 gap-3 md:gap-6">
                 {filteredBikes.map((bike) => (
                   <StaggerItem key={bike.id}>
                     <Link to={`/inventory/${bike.id}`} className="block">

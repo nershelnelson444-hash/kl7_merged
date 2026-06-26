@@ -21,7 +21,7 @@ export default function Footer() {
               Ready to test your dream bike?
             </h2>
             <p className="text-text-white-muted font-medium leading-relaxed">
-              Curated pre-owned motorcycles from the world's most prestigious brands since 2015.
+              Curated pre-owned motorcycles from the world's most prestigious brands since 2016.
             </p>
             <Button asLink to="/contact" variant="inverse">
               Contact us

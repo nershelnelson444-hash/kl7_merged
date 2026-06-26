@@ -243,7 +243,7 @@ export default function AboutUs() {
             transition={{ duration: 1, ease: easings.easeOutMotion, delay: 0.2 }}
           >
             <p className="text-[11px] font-bold uppercase tracking-[0.25em] text-white/60 mb-6">
-              Kochi, Kerala · Est. 2015
+              Kochi, Kerala · Est. 2016
             </p>
             <h1 className="text-[clamp(40px,6vw,88px)] font-bold text-white leading-[0.95] tracking-tight mb-8 max-w-3xl">
               Born from a passion<br />for the machine.
@@ -526,7 +526,7 @@ export default function AboutUs() {
       <section className="bg-black py-0">
         <div className="max-w-[1480px] mx-auto w-full">
           <div className="grid grid-cols-2 md:grid-cols-4 divide-x divide-[#2A2A2A]">
-            <StatItem number={10} suffix="+" label="Years in Business" sublabel="Since 2015" index={0} />
+            <StatItem number={9} suffix="+" label="Years in Business" sublabel="Since 2016" index={0} />
             <StatItem number={500} suffix="+" label="Riders Served" sublabel="And growing" index={1} />
             <StatItem number={2} suffix="" label="Showroom Locations" sublabel="Across Kochi" index={2} />
             <StatItem number={98} suffix="%" label="Satisfaction Rate" sublabel="Verified reviews" index={3} />
