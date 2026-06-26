@@ -9,6 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/context/AuthContext";
+import { supabase } from "@/config/SupabaseClient";
 import { toast } from "sonner";
 import kl7Logo from "@/assets/kl7logo.png";
 
@@ -31,7 +32,7 @@ export default function Login() {
     formState: { errors, isSubmitting },
   } = useForm<LoginForm>({
     resolver: zodResolver(loginSchema),
-    defaultValues: { email: "nershel@kl7garage.in", password: "" },
+    defaultValues: { email: "", password: "" },
   });
 
   if (isAuthenticated) {
@@ -41,6 +42,16 @@ export default function Login() {
 
   const onSubmit = async (values: LoginForm) => {
     try {
+      const { data: isValid, error } = await supabase.rpc("verify_admin", {
+        input_email: values.email,
+        input_password: values.password,
+      });
+
+      if (error || !isValid) {
+        toast.error("Invalid email or password.");
+        return;
+      }
+
       await login(values);
       toast.success("Welcome back!");
       navigate((location.state as { from?: string } | null)?.from ?? "/", { replace: true });
@@ -152,10 +163,6 @@ export default function Login() {
               {isSubmitting ? "Signing in..." : "Sign in"}
               {!isSubmitting && <ArrowRight className="h-4 w-4" />}
             </Button>
-
-            <p className="text-center text-xs text-muted">
-              Demo build — any password (4+ characters) signs you in as Owner.
-            </p>
           </form>
         </motion.div>
       </div>
