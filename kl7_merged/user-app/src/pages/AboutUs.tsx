@@ -220,18 +220,8 @@ export default function AboutUs() {
   const heroImageY = useTransform(heroScroll, [0, 1], ['0%', '20%']);
   const heroOpacity = useTransform(heroScroll, [0, 0.7], [1, 0]);
 
-  // Load Curator.io Instagram feed — newest post first, auto-refresh every 5 min
+  // Load Curator.io Instagram feed
   useEffect(() => {
-    // Inject global Curator config BEFORE the script so it picks it up on init
-    if (!(window as any).CuratorOptions) {
-      (window as any).CuratorOptions = {
-        feedId: '0ef26f4a-caa5-4b93-9ee9-f6bb34eaf5e1',
-        sortBy: 'published_at',
-        sortOrder: 'desc',
-        postsPerPage: 16,
-      };
-    }
-
     const loadScript = () => {
       if (document.getElementById('curator-script')) return;
       const script = document.createElement('script');
@@ -244,15 +234,7 @@ export default function AboutUs() {
 
     loadScript();
 
-    // Auto-refresh: reload the feed every 5 minutes
-    const refreshInterval = setInterval(() => {
-      const existing = document.getElementById('curator-script');
-      if (existing) existing.remove();
-      setTimeout(loadScript, 500);
-    }, 5 * 60 * 1000);
-
     return () => {
-      clearInterval(refreshInterval);
       const existing = document.getElementById('curator-script');
       if (existing) existing.remove();
     };
@@ -434,7 +416,7 @@ export default function AboutUs() {
         <div
           id="curator-feed-default-feed-layout"
           className="w-full"
-          style={{ display: 'none' } as React.CSSProperties}
+          style={{ opacity: 0, transition: 'opacity 0.4s ease' } as React.CSSProperties}
         >
           <a
             href="https://curator.io"
@@ -448,9 +430,8 @@ export default function AboutUs() {
 
         {/* ── Premium Gallery Styles ───────────────────────────────────── */}
         <style>{`
-          /* ── Grid layout ─────────────────────────────────────────────── */
-          .kl7-gallery-grid,
-          #curator-feed-default-feed-layout .crt-feed {
+          /* ── Grid layout for skeleton only ────────────────────────────── */
+          .kl7-gallery-grid {
             display: grid !important;
             grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
             gap: 20px !important;
@@ -460,17 +441,44 @@ export default function AboutUs() {
           }
 
           @media (max-width: 1024px) {
-            .kl7-gallery-grid,
-            #curator-feed-default-feed-layout .crt-feed {
+            .kl7-gallery-grid {
               grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
             }
           }
 
           @media (max-width: 640px) {
-            .kl7-gallery-grid,
-            #curator-feed-default-feed-layout .crt-feed {
+            .kl7-gallery-grid {
               grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
               gap: 12px !important;
+            }
+          }
+
+          /* ── Curator feed: columns layout (compatible with Waterfall) ── */
+          #curator-feed-default-feed-layout .crt-feed {
+            column-count: 4 !important;
+            column-gap: 20px !important;
+            padding: 0 !important;
+            margin: 0 !important;
+          }
+
+          #curator-feed-default-feed-layout .crt-post {
+            break-inside: avoid !important;
+            margin-bottom: 20px !important;
+          }
+
+          @media (max-width: 1024px) {
+            #curator-feed-default-feed-layout .crt-feed {
+              column-count: 3 !important;
+            }
+          }
+
+          @media (max-width: 640px) {
+            #curator-feed-default-feed-layout .crt-feed {
+              column-count: 2 !important;
+              column-gap: 12px !important;
+            }
+            #curator-feed-default-feed-layout .crt-post {
+              margin-bottom: 12px !important;
             }
           }
 
@@ -491,14 +499,13 @@ export default function AboutUs() {
 
           /* ── Each post card ──────────────────────────────────────────── */
           #curator-feed-default-feed-layout .crt-post {
-            aspect-ratio: 4 / 5 !important;
             overflow: hidden !important;
             border-radius: 16px !important;
             position: relative !important;
             cursor: pointer !important;
             background: #111 !important;
             box-shadow: 0 2px 12px rgba(0,0,0,0.08) !important;
-            transform: translateZ(0);                   /* GPU layer */
+            transform: translateZ(0);
             transition: box-shadow 0.35s ease, transform 0.35s ease !important;
             will-change: transform;
           }
@@ -515,20 +522,17 @@ export default function AboutUs() {
             display: block !important;
             width: 100% !important;
             height: 100% !important;
-            position: absolute !important;
-            inset: 0 !important;
           }
 
           /* ── Image: cover the card, zoom on hover ────────────────────── */
           #curator-feed-default-feed-layout .crt-post img {
             width: 100% !important;
-            height: 100% !important;
+            height: auto !important;
             object-fit: cover !important;
             object-position: center !important;
             display: block !important;
             transition: transform 0.55s cubic-bezier(0.25, 0.46, 0.45, 0.94) !important;
             will-change: transform;
-            content-visibility: auto;                  /* lazy render */
           }
 
           #curator-feed-default-feed-layout .crt-post:hover img {
@@ -607,45 +611,39 @@ export default function AboutUs() {
           #curator-feed-default-feed-layout .crt-post:nth-child(n+17) {
             display: none !important;
           }
-
-          /* ── Prevent layout shift while loading ──────────────────────── */
-          #curator-feed-default-feed-layout {
-            contain: layout style;
-          }
         `}</style>
 
         {/* Script to swap skeleton → real feed once Curator renders */}
         <script dangerouslySetInnerHTML={{ __html: `
           (function () {
-            var CHECK_INTERVAL = 300;   // ms between checks
-            var MAX_WAIT = 15000;        // give up after 15 s
+            var CHECK_INTERVAL = 300;
+            var MAX_WAIT = 20000;
             var elapsed = 0;
+            var shown = false;
+
+            function showFeed() {
+              if (shown) return;
+              shown = true;
+              var skeleton = document.getElementById('kl7-gallery-skeleton');
+              var container = document.getElementById('curator-feed-default-feed-layout');
+              if (skeleton) skeleton.style.display = 'none';
+              if (container) container.style.opacity = '1';
+            }
 
             function ready() {
               var feed = document.querySelector(
                 '#curator-feed-default-feed-layout .crt-feed'
               );
-              // Wait until at least 4 posts with images are injected
               if (!feed) return false;
-              var posts = feed.querySelectorAll('.crt-post img[src]');
-              return posts.length >= 4;
+              var posts = feed.querySelectorAll('.crt-post');
+              return posts.length >= 1;
             }
 
             var timer = setInterval(function () {
               elapsed += CHECK_INTERVAL;
               if (ready() || elapsed >= MAX_WAIT) {
                 clearInterval(timer);
-                // Hide skeleton, show real feed
-                var skeleton = document.getElementById('kl7-gallery-skeleton');
-                var container = document.getElementById('curator-feed-default-feed-layout');
-                if (skeleton)   skeleton.style.display = 'none';
-                if (container)  container.style.display = 'block';
-
-                // Lazy-load images that curator didn't lazy-load itself
-                if ('IntersectionObserver' in window) {
-                  var imgs = container ? container.querySelectorAll('img:not([loading])') : [];
-                  imgs.forEach(function(img) { img.loading = 'lazy'; });
-                }
+                showFeed();
               }
             }, CHECK_INTERVAL);
           })();
